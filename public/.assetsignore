@@ -1,0 +1,11 @@
+# Fichiers présents dans dist/ mais qui ne doivent pas être servis comme assets
+# publics. Ce fichier est copié de public/ vers dist/ par le build Astro, et lu
+# par wrangler à la racine du répertoire d'assets.
+
+# Lus par Cloudflare au déploiement, jamais téléchargeables (SCRUM-197 / 198).
+_headers
+_redirects
+
+# Bruit de dépôt
+**/.DS_Store
+**/.gitkeep

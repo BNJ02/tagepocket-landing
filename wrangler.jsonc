@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // Site statique servi par Workers Static Assets. Cloudflare recommande
+  // Workers plutôt que Pages pour tout nouveau site ; Pages n'est plus maintenu
+  // que pour l'existant. On migre pendant la refonte (SCRUM-194) : c'est le
+  // moment le moins risqué, l'app n'étant pas publiée et aucun client ne payant
+  // encore. Bénéfice direct : cette configuration est versionnée, alors que les
+  // réglages Pages ne vivaient que dans le dashboard.
+  "name": "tagepocket-landing",
+  // Date la plus récente que supporte le runtime workerd livré avec le
+  // wrangler installé (1.20260921.1). Une date postérieure fait échouer
+  // `wrangler dev` en local — « Compatibility date is in the future and
+  // unsupported » — même si le déploiement distant l'accepterait.
+  "compatibility_date": "2026-09-21",
+
+  // Pas de champ `main` : ce Worker ne contient aucun script, seulement des
+  // assets. Pas de `binding` non plus, qui n'est valide qu'avec un `main`.
+  // Toute la logique ayant besoin d'un secret (Stripe, service_role) vit dans
+  // les Edge Functions Supabase — voir l'epic SCRUM-192.
+  "assets": {
+    "directory": "./dist/",
+
+    // Sert dist/404.html avec un vrai statut 404 sur les chemins inconnus.
+    // Contrairement à Pages, ce comportement n'est pas deviné : il doit être
+    // déclaré. Sans cette ligne, une URL inconnue renverrait un 404 nu.
+    "not_found_handling": "404-page",
+
+    // Astro produit des fichiers plats (`build.format: 'file'`) : support.html,
+    // confidentialite.html… `auto-trailing-slash` les sert sans extension
+    // (/support) et redirige /support.html vers /support. C'est exactement la
+    // normalisation d'URL prévue en SCRUM-197, obtenue sans règle manuelle.
+    "html_handling": "auto-trailing-slash"
+  },
+
+  // Journaux et traces consultables via `wrangler tail` et le dashboard.
+  "observability": { "enabled": true },
+
+  // URL *.workers.dev conservée le temps de la migration : elle permet de
+  // vérifier le Worker en conditions réelles avant de lui confier le domaine.
+  // À passer à false une fois la bascule faite, pour n'avoir qu'une seule
+  // adresse publique indexable.
+  "workers_dev": true
+
+  // ——— BASCULE DU DOMAINE, à décommenter le jour J ———
+  // Ordre impératif : d'abord détacher www.tagepocket.fr du projet Pages
+  // (dashboard → Pages → Custom domains), sinon `wrangler deploy` échoue,
+  // le hostname étant déjà attribué. Ensuite décommenter et redéployer.
+  //
+  // "routes": [
+  //   { "pattern": "www.tagepocket.fr", "custom_domain": true }
+  // ]
+}
