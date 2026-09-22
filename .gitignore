@@ -7,3 +7,13 @@ Thumbs.db
 
 # Logs éventuels
 *.log
+
+# Build Astro
+dist/
+.astro/
+node_modules/
+
+# Variables d'environnement (PUBLIC_SUPABASE_* — jamais de clé Stripe ici)
+.env
+.env.*
+!.env.example
