@@ -94,13 +94,31 @@ les enregistrements qui *désignent* ces serveurs changent de zone.
 | `CNAME www → tagepocket-landing.pages.dev` | custom domain du Worker |
 | DNSSEC géré par OVH | DNSSEC Cloudflare, avec un nouveau DS à déclarer côté registrar |
 
-### Déploiement continu
+### Déploiement continu — aujourd'hui, par Pages
 
-Dashboard → **Workers** → `tagepocket-landing` → **Settings** → **Builds** →
-connecter le dépôt GitHub `BNJ02/tagepocket-landing`, branche `main`,
-commande `npm run build`, commande de déploiement `npx wrangler deploy`.
-Variable d'environnement de build `NODE_VERSION` = `22` (le `.nvmrc` devrait
-suffire, c'est une ceinture de sécurité).
+Tant que la zone DNS n'est pas chez Cloudflare, la production est servie par le
+projet **Pages** `tagepocket-landing`, qui construit le site Astro à chaque push
+sur `main` depuis `BNJ02/tagepocket-landing` :
+
+| Réglage | Valeur |
+|---|---|
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Root directory | racine du dépôt |
+| `NODE_VERSION` (production et preview) | `22` |
+| Build caching | activé |
+
+Ces réglages ont été posés le 22/09/2026. **Avant cela, la commande de build
+était vide** : un push aurait déployé la racine du dépôt, où `index.html` n'est
+plus depuis son passage dans `public/`, et cassé le site.
+
+Le Worker reste déployé en parallèle sur son sous-domaine `workers.dev`, prêt à
+reprendre la production dès que la zone sera transférée. `npm run deploy` le met
+à jour sans toucher à Pages.
+
+Note : Pages ignore `.assetsignore`, qui est un mécanisme propre aux Workers, et
+sert donc `/.assetsignore`. Sans conséquence — le fichier ne contient que des
+noms de fichiers — et le problème disparaît à la migration.
 
 ## Arborescence
 
