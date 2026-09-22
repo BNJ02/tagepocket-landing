@@ -36,18 +36,12 @@
   // Journaux et traces consultables via `wrangler tail` et le dashboard.
   "observability": { "enabled": true },
 
-  // URL *.workers.dev conservée le temps de la migration : elle permet de
-  // vérifier le Worker en conditions réelles avant de lui confier le domaine.
-  // À passer à false une fois la bascule faite, pour n'avoir qu'une seule
-  // adresse publique indexable.
+  // BLOQUANT : un custom domain de Worker exige que la zone soit hébergée chez
+  // Cloudflare — l'API crée l'enregistrement DNS elle-même et échoue sinon
+  // (« Can't infer zone from route », code 10082). Or tagepocket.fr est délégué
+  // à OVHcloud (ns106.ovh.net) et le compte Cloudflare ne contient aucune zone.
+  // Les custom domains de Pages, eux, se contentent d'un CNAME depuis n'importe
+  // quel hébergeur DNS : c'est pour ça que le site actuel fonctionne.
+  // Tant que la zone n'est pas transférée chez Cloudflare, pas de `routes` ici.
   "workers_dev": true
-
-  // ——— BASCULE DU DOMAINE, à décommenter le jour J ———
-  // Ordre impératif : d'abord détacher www.tagepocket.fr du projet Pages
-  // (dashboard → Pages → Custom domains), sinon `wrangler deploy` échoue,
-  // le hostname étant déjà attribué. Ensuite décommenter et redéployer.
-  //
-  // "routes": [
-  //   { "pattern": "www.tagepocket.fr", "custom_domain": true }
-  // ]
 }

@@ -52,16 +52,47 @@ Le routage est déclaré dans `wrangler.jsonc` :
 > historiques du site sont en `.html` : SCRUM-197 doit poser des **301**
 > explicites dans `public/_redirects` pour consolider le référencement.
 
-### Bascule du domaine (à faire une seule fois)
+### Bascule du domaine — bloquée, et pourquoi
 
-1. `npx wrangler login`
-2. `npm run deploy` → le Worker sort sur `*.workers.dev`, vérifier le site.
-3. Dashboard → **Pages** → projet → **Custom domains** → détacher
-   `www.tagepocket.fr`. Obligatoire **avant** l'étape 4 : un hostname ne peut pas
-   être attaché à deux projets, `wrangler deploy` échouerait.
-4. Décommenter le bloc `routes` de `wrangler.jsonc`, passer `workers_dev` à
-   `false`, puis `npm run deploy`.
-5. Vérifier `https://www.tagepocket.fr`, puis supprimer le projet Pages.
+**Un custom domain de Worker exige que la zone DNS soit hébergée chez
+Cloudflare.** L'API crée elle-même l'enregistrement et échoue sinon, avec
+`Can't infer zone from route [code: 10082]`. Un custom domain de *Pages* se
+contentait d'un CNAME depuis n'importe quel hébergeur DNS : c'est la différence
+qui a été manquée lors de la première tentative de bascule, et elle a mis le
+site hors ligne le 22/09/2026.
+
+`tagepocket.fr` est délégué à OVHcloud (`ns106.ovh.net`) et le compte Cloudflare
+ne contient aucune zone. Tant que ce n'est pas le cas, pas de bloc `routes` dans
+`wrangler.jsonc`, et le Worker n'est joignable que sur `*.workers.dev`.
+
+Le domaine reste acheté et géré chez OVH : déplacer le DNS ne transfère pas le
+domaine et ne déplace pas les boîtes mail, qui restent sur le MX Plan OVH. Seuls
+les enregistrements qui *désignent* ces serveurs changent de zone.
+
+#### Ordre impératif du transfert
+
+1. **Désactiver DNSSEC chez OVH d'abord.** Un DS est publié au registre `.fr`.
+   Changer les nameservers sans retirer ce DS rend le domaine totalement
+   irrésolvable pour les résolveurs validants. Le retrait prend quelques heures.
+2. Exporter la zone OVH (format BIND) et créer la zone chez Cloudflare, en
+   vérifiant le scan enregistrement par enregistrement contre cet export. Un
+   sondage DNS depuis l'extérieur ne suffit pas : il ne peut pas deviner les
+   sélecteurs DKIM d'OVH (`ovhmoXXXXX-selector1._domainkey`), dont l'oubli fait
+   tomber les mails en spam.
+3. Vérifier en particulier les 4 MX `mx0..mx3.mail.ovh.net` (priorités 1, 5, 50,
+   100), le SPF `v=spf1 include:mx.ovh.com ~all` et le `_dmarc`. Ils portent
+   `contact@` et `support@tagepocket.fr`.
+4. Seulement ensuite, basculer les nameservers chez OVH.
+5. Zone active → ajouter le bloc `routes` dans `wrangler.jsonc`, passer
+   `workers_dev` à `false`, `npm run deploy`.
+
+#### À recréer, sans équivalent automatique
+
+| Ancien mécanisme OVH | Remplacement Cloudflare |
+|---|---|
+| `A @ → 213.186.33.5` + `TXT @ → 4\|https://www.tagepocket.fr` — redirection apex propriétaire | Redirect Rule 301 `tagepocket.fr/*` → `https://www.tagepocket.fr/$1` |
+| `CNAME www → tagepocket-landing.pages.dev` | custom domain du Worker |
+| DNSSEC géré par OVH | DNSSEC Cloudflare, avec un nouveau DS à déclarer côté registrar |
 
 ### Déploiement continu
 
