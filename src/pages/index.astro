@@ -14,7 +14,7 @@ import Base from '../layouts/Base.astro';
 import Phone from '../components/Phone.astro';
 import Faq from '../components/Faq.astro';
 import { TARIFS_TARGET, CONTACT_EMAIL } from '../lib/nav';
-import { FORMULES, ESSAI_JOURS, euros, parMois } from '../lib/offre';
+import { FORMULES, ESSAI_JOURS, nombre, parMois } from '../lib/offre';
 
 /* Les six sous-épreuves, dans l'ordre du Parcours de l'app
    (~/memora_tage_mage/src/data/structure.ts). Le lieu est le titre, la
@@ -205,12 +205,14 @@ const mensuel = FORMULES[0];
               {f.avantage && <p class="formule__ruban">{f.avantage}</p>}
               <h3>{f.nom}</h3>
               <p class="formule__prix">
-                <span class="num">{euros(f.prix)}</span>
+                <span class="formule__montant">
+                  <span class="num">{nombre(f.prix)}</span> €
+                </span>
                 <span class="formule__periode">{f.periode}</span>
               </p>
               {f.mois > 1 && (
                 <p class="formule__mensualise">
-                  soit <span class="num">{euros(parMois(f))}</span> par mois
+                  soit <span class="num">{nombre(parMois(f))}</span> € par mois
                 </p>
               )}
               <p class="formule__tva">TTC, TVA comprise</p>
@@ -296,7 +298,7 @@ const mensuel = FORMULES[0];
         <a class="btn btn--accent" href={TARIFS_TARGET}>Commencer l’essai gratuit</a>
       </p>
       <p class="final__note">
-        <span class="num">{euros(mensuel.prix)}</span> par mois après l’essai ·
+        <span class="num">{nombre(mensuel.prix)}</span> € par mois après l’essai ·
         sans engagement
       </p>
     </div>
@@ -569,9 +571,12 @@ const mensuel = FORMULES[0];
     gap: var(--space-2);
   }
 
-  .formule__prix .num {
+  .formule__montant {
     font-size: var(--text-2xl);
+    font-weight: 600;
     color: var(--accent-strong);
+    /* Le « € » revient en Hanken : mono pour les chiffres, pas pour l'unité. */
+    letter-spacing: -0.02em;
   }
 
   .formule__periode {

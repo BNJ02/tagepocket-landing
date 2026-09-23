@@ -211,10 +211,18 @@ Le néon `#2AFFA6` et les incisives blanches sont dessinés pour le fond d'encre
 `#02110D` — **la pastille sombre n'est pas une décoration**, c'est ce qui rend
 la marque lisible sur fond clair.
 
-> ⚠️ **`public/logo.png` est porteur.** Le template d'e-mail transactionnel
-> Supabase le référence en URL absolue `https://www.tagepocket.fr/logo.png`
-> (commit `0e1cf57`). Le déplacer ou le renommer casse l'image des mails de
-> confirmation de compte. Il n'est référencé par aucune page.
+> ⚠️ **`public/logo.png` est porteur.** Les **six** templates d'e-mail
+> transactionnel de Supabase le référencent en URL absolue
+> `https://www.tagepocket.fr/logo.png` (`confirm-signup`, `magic-link`,
+> `reset-password`, `password-changed`, `change-email`,
+> `email-address-changed`, dans `~/memora_tage_mage/supabase/email-templates/`,
+> commit `0e1cf57`). Le déplacer ou le renommer casse l'image de tous les mails
+> du compte. Il n'est référencé par aucune page du site.
+>
+> `public/logo@2x.png` (300 ko), en revanche, n'est référencé **nulle part** :
+> la convention `@2x` est celle du bundler Metro, qui n'existe pas sur le web —
+> un client mail ne va pas chercher un `@2x` tout seul. Candidat à la
+> suppression en SCRUM-197.
 
 Les dérivés ne se retouchent jamais à la main : tout se régénère par
 `python3 scripts/gen-brand-assets.py` dans le dépôt de l'app, depuis

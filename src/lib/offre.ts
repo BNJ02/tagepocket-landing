@@ -59,6 +59,16 @@ export const ESSAI_JOURS = 14;
 /** Prix mensualisé d'une formule, pour la comparer aux autres. */
 export const parMois = (f: Formule): number => f.prix / f.mois;
 
-/** « 8,99 € » — virgule décimale, espace insécable avant l'euro. */
-export const euros = (montant: number): string =>
-  `${montant.toFixed(2).replace('.', ',')} €`;
+/**
+ * « 8,99 » — virgule décimale, sans le symbole.
+ *
+ * Le symbole se pose à côté, HORS de la classe `.num` : JetBrains Mono est à
+ * chasse fixe, et un « € » monospacé colle au nombre une cellule pleine de
+ * blanc. Le mono sert à aligner des chiffres entre eux, pas à composer une
+ * unité.
+ */
+export const nombre = (montant: number): string =>
+  montant.toFixed(2).replace('.', ',');
+
+/** « 8,99 € » d'un seul tenant — pour un `alt`, une meta, un e-mail. */
+export const euros = (montant: number): string => `${nombre(montant)} €`;
