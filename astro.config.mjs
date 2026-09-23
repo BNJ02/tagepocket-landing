@@ -14,10 +14,16 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   integrations: [
-    // Ne recense que les pages générées par Astro. `/compte/*` en est exclu :
-    // ces pages portent un `noindex` et n'ont rien à faire dans un index.
+    // Ne recense que les pages générées par Astro. Les pages `noindex` en sont
+    // exclues : un sitemap qui liste une page tout en lui interdisant l'index
+    // est une contradiction que la Search Console remonte en erreur.
+    // Tenir cette liste alignée sur les pages qui passent `noindex` à Base.astro
+    // (gabarit Auth.astro, /compte/*, 404).
     sitemap({
-      filter: (page) => !page.includes('/compte'),
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        return !['/compte', '/connexion', '/auth/'].some((p) => pathname.startsWith(p));
+      },
     }),
   ],
   build: {

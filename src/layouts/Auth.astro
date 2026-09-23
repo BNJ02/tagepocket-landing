@@ -1,0 +1,208 @@
+---
+/**
+ * Gabarit des pages d'authentification : /connexion, /auth/callback, et plus
+ * tard /compte/supprimer (SCRUM-204).
+ *
+ * Une colonne étroite, centrée, une carte blanche. Hors des moteurs : une page
+ * de connexion n'a rien à dire à un moteur de recherche, et un résultat « Se
+ * connecter · TagePocket » qui passe devant la landing est un résultat perdu.
+ * `noindex` et non `Disallow` dans robots.txt : un robot à qui on interdit
+ * l'URL ne lit jamais la balise, et peut indexer l'adresse nue.
+ *
+ * Les pages de ce gabarit ne fonctionnent qu'avec JavaScript : Supabase Auth
+ * s'appelle depuis le navigateur. Le <noscript> le dit, plutôt que d'afficher
+ * un formulaire qui ne fait rien quand on le soumet.
+ */
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Illustration de Gaston, sans extension, dans /brand. */
+  gaston?: 'gaston-content' | 'gaston-fier' | 'gaston-inquiet' | 'gaston-endormi';
+}
+
+const { title, description, gaston = 'gaston-content' } = Astro.props;
+---
+
+<Base title={title} description={description} noindex>
+  <div class="page auth">
+    <div class="auth__carte">
+      <img class="auth__gaston" src={`/brand/${gaston}.svg`} alt="" width="96" height="96" />
+      <slot />
+      <noscript>
+        <p class="auth__alerte auth__alerte--bad">
+          Cette page a besoin de JavaScript pour te connecter. Active-le, ou
+          connecte-toi directement dans l'app.
+        </p>
+      </noscript>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .auth {
+    display: flex;
+    justify-content: center;
+    padding-block: var(--space-12) var(--space-24);
+  }
+
+  .auth__carte {
+    width: 100%;
+    max-width: 26rem;
+    padding: var(--space-8) var(--space-6);
+    background: var(--app-card);
+    border: 1px solid var(--bois-300);
+    border-radius: var(--radius-lg);
+    /* La tranche de la carte est en bois : la carte « porte » le formulaire. */
+    box-shadow: 0 4px 0 var(--bois-300);
+  }
+
+  .auth__gaston {
+    display: block;
+    margin: 0 auto var(--space-4);
+  }
+
+  /* ——— Contenu du slot ———
+     `:global` parce que tout arrive par <slot> : les styles à portée d'Astro
+     ne s'appliquent qu'aux éléments écrits dans CE fichier. Préfixés par
+     `.auth` pour ne pas fuir hors du gabarit. */
+
+  .auth :global(h1) {
+    font-size: var(--text-xl);
+    text-align: center;
+  }
+
+  .auth :global(.auth__sous-titre) {
+    margin-top: var(--space-2);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    text-align: center;
+  }
+
+  .auth :global(form) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+  }
+
+  .auth :global(label) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .auth :global(input) {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+    font-weight: 400;
+    color: var(--ink);
+    background: var(--app-bg);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+  }
+
+  .auth :global(input:focus-visible) {
+    border-color: var(--accent-strong);
+  }
+
+  /* Le code à 6 chiffres se lit en chasse fixe, espacé, comme dans l'e-mail. */
+  .auth :global(input.auth__code) {
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    letter-spacing: 0.3em;
+    text-align: center;
+  }
+
+  .auth :global(.auth__aide) {
+    font-weight: 400;
+    color: var(--ink-2);
+  }
+
+  /* Menthe = agir : le seul bouton plein de la carte est celui qui soumet. */
+  .auth :global(button[type='submit']) {
+    margin-top: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-weight: 600;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 0;
+    border-radius: var(--radius-full);
+    box-shadow: 0 4px 0 var(--accent-press);
+    cursor: pointer;
+  }
+
+  .auth :global(button[type='submit']:hover) {
+    background: var(--accent-press);
+    color: var(--brand-ink);
+  }
+
+  .auth :global(button[type='submit']:disabled) {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  /* Les liens d'action secondaires sont des <button> — ils changent de vue sans
+     changer de page — habillés en liens. */
+  .auth :global(.auth__lien) {
+    padding: 0;
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--accent-strong);
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .auth :global(.auth__liens) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2) var(--space-6);
+    margin-top: var(--space-6);
+  }
+
+  .auth :global(.auth__bascule) {
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--bois-300);
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    text-align: center;
+  }
+
+  /* Messages. `role="alert"` / `role="status"` posés dans le HTML : un lecteur
+     d'écran annonce le texte dès qu'il change. */
+  .auth :global(.auth__alerte) {
+    margin-bottom: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    border-radius: var(--radius-sm);
+  }
+
+  /* L'alerte sans JavaScript, elle, arrive en bas de carte. */
+  noscript .auth__alerte {
+    margin: var(--space-6) 0 0;
+  }
+
+  .auth :global(.auth__alerte:empty) {
+    display: none;
+  }
+
+  .auth :global(.auth__alerte--bad) {
+    color: var(--bad-ink);
+    background: var(--bad-soft);
+  }
+
+  .auth :global(.auth__alerte--ok) {
+    color: var(--ok-ink);
+    background: var(--ok-soft);
+  }
+</style>

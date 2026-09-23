@@ -1,0 +1,431 @@
+---
+/**
+ * /connexion — connexion, inscription, code de connexion, mot de passe oublié
+ * (SCRUM-202).
+ *
+ * Mêmes flux que l'écran d'authentification de l'app
+ * (`~/memora_tage_mage/src/app/auth.tsx`) : un compte créé ici ouvre l'app, et
+ * inversement, parce que les deux parlent au même projet Supabase.
+ *
+ * Une seule page, cinq vues. Passer d'une vue à l'autre ne recharge rien et
+ * garde l'adresse e-mail déjà tapée. `?vue=inscription` ouvre directement le
+ * formulaire d'inscription — c'est le lien que posera /tarifs (SCRUM-209).
+ *
+ * Pas de pseudo à l'inscription, contrairement à ce que prévoyait le ticket.
+ * Le pseudo vit dans `user_state.state.profile`, un blob que l'app réécrit en
+ * entier à chaque synchro (Last-Write-Wins) : si le site y écrivait, l'app
+ * pourrait l'écraser, ou l'inverse. L'app le demande au premier lancement
+ * (OnboardingModal), et c'est elle qui l'écrit. Le site ne touche jamais à
+ * `user_state`.
+ */
+import Auth from '../layouts/Auth.astro';
+---
+
+<Auth
+  title="Se connecter · TagePocket"
+  description="Connecte-toi à ton compte TagePocket, le même que dans l'app."
+>
+  <p id="alerte" class="auth__alerte auth__alerte--bad" role="alert"></p>
+  <p id="info" class="auth__alerte auth__alerte--ok" role="status"></p>
+
+  {/* ——— Connexion ——— */}
+  <section data-vue="connexion">
+    <h1>Content de te revoir</h1>
+    <p class="auth__sous-titre">Le même compte que dans l'app.</p>
+    <form id="f-connexion" novalidate>
+      <label>
+        E-mail
+        <input name="email" type="email" autocomplete="email" required />
+      </label>
+      <label>
+        Mot de passe
+        <input name="password" type="password" autocomplete="current-password" required />
+      </label>
+      <button type="submit">Se connecter</button>
+    </form>
+    <p class="auth__liens">
+      <button type="button" class="auth__lien" data-aller="reinit">Mot de passe oublié ?</button>
+      <button type="button" class="auth__lien" data-aller="code">Recevoir un code de connexion</button>
+    </p>
+    <p class="auth__liens" id="renvoi-connexion" hidden>
+      <button type="button" class="auth__lien" data-renvoyer>Renvoyer l'e-mail de confirmation</button>
+    </p>
+    <p class="auth__bascule">
+      Pas encore de compte ?{' '}
+      <button type="button" class="auth__lien" data-aller="inscription">Créer un compte</button>
+    </p>
+  </section>
+
+  {/* ——— Inscription ——— */}
+  <section data-vue="inscription" hidden>
+    <h1>Crée ton compte</h1>
+    <p class="auth__sous-titre">
+      Il te servira aussi dans l'app. Ton pseudo, tu le choisiras au premier lancement.
+    </p>
+    <form id="f-inscription" novalidate>
+      <label>
+        E-mail
+        <input name="email" type="email" autocomplete="email" required />
+      </label>
+      <label>
+        Mot de passe
+        <span class="auth__aide">6 caractères minimum.</span>
+        <input name="password" type="password" autocomplete="new-password" minlength="6" required />
+      </label>
+      <label>
+        Confirme le mot de passe
+        <input name="confirm" type="password" autocomplete="new-password" minlength="6" required />
+      </label>
+      <button type="submit">Créer mon compte</button>
+    </form>
+    <p class="auth__bascule">
+      Déjà un compte ?{' '}
+      <button type="button" class="auth__lien" data-aller="connexion">Se connecter</button>
+    </p>
+  </section>
+
+  {/* ——— Inscription envoyée ——— */}
+  <section data-vue="envoye" hidden>
+    <h1>Regarde ta boîte mail</h1>
+    <p class="auth__sous-titre">
+      Si <strong data-email-affiche></strong> n'a pas encore de compte, on vient d'y
+      envoyer un lien de confirmation. Clique dessus, et ton compte est prêt, ici comme
+      dans l'app.
+    </p>
+    <p class="auth__sous-titre">
+      Tu as déjà un compte avec cette adresse ?{' '}
+      <button type="button" class="auth__lien" data-aller="connexion">Connecte-toi</button>.
+    </p>
+    <p class="auth__liens">
+      <button type="button" class="auth__lien" data-renvoyer>Je n'ai rien reçu, renvoyer</button>
+    </p>
+  </section>
+
+  {/* ——— Code de connexion ——— */}
+  <section data-vue="code" hidden>
+    <h1>Connexion par code</h1>
+    <p class="auth__sous-titre" data-etape="demande">
+      Reçois un code de connexion par e-mail, sans mot de passe.
+    </p>
+    <p class="auth__sous-titre" data-etape="saisie" hidden>
+      Si un compte existe pour <strong data-email-affiche></strong>, un code à 6 chiffres
+      vient de partir.
+    </p>
+    <form id="f-code-demande" data-etape="demande" novalidate>
+      <label>
+        E-mail
+        <input name="email" type="email" autocomplete="email" required />
+      </label>
+      <button type="submit">Recevoir un code</button>
+    </form>
+    <form id="f-code-saisie" data-etape="saisie" hidden novalidate>
+      <label>
+        Code à 6 chiffres
+        <input
+          class="auth__code"
+          name="token"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          required
+        />
+      </label>
+      <button type="submit">Se connecter</button>
+    </form>
+    <p class="auth__bascule">
+      <button type="button" class="auth__lien" data-aller="connexion">Retour à la connexion</button>
+    </p>
+  </section>
+
+  {/* ——— Mot de passe oublié ——— */}
+  <section data-vue="reinit" hidden>
+    <h1>Mot de passe oublié</h1>
+    <p class="auth__sous-titre" data-etape="demande">
+      Reçois un code pour choisir un nouveau mot de passe.
+    </p>
+    <p class="auth__sous-titre" data-etape="saisie" hidden>
+      Si un compte existe pour <strong data-email-affiche></strong>, un code à 6 chiffres
+      vient de partir.
+    </p>
+    <form id="f-reinit-demande" data-etape="demande" novalidate>
+      <label>
+        E-mail
+        <input name="email" type="email" autocomplete="email" required />
+      </label>
+      <button type="submit">Recevoir un code</button>
+    </form>
+    <form id="f-reinit-saisie" data-etape="saisie" hidden novalidate>
+      <label>
+        Code à 6 chiffres
+        <input
+          class="auth__code"
+          name="token"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          required
+        />
+      </label>
+      <label>
+        Nouveau mot de passe
+        <span class="auth__aide">6 caractères minimum.</span>
+        <input name="password" type="password" autocomplete="new-password" minlength="6" required />
+      </label>
+      <button type="submit">Changer mon mot de passe</button>
+    </form>
+    <p class="auth__bascule">
+      <button type="button" class="auth__lien" data-aller="connexion">Retour à la connexion</button>
+    </p>
+  </section>
+</Auth>
+
+<script>
+  import type { AuthError } from '@supabase/supabase-js';
+  import { supabase } from '../lib/supabase';
+  import { destinationSure, messageErreur, urlDeRetour } from '../lib/auth';
+
+  type Vue = 'connexion' | 'inscription' | 'envoye' | 'code' | 'reinit';
+  const VUES: Vue[] = ['connexion', 'inscription', 'envoye', 'code', 'reinit'];
+
+  const params = new URLSearchParams(window.location.search);
+  const destination = destinationSure(params.get('next'));
+
+  const alerte = document.getElementById('alerte')!;
+  const info = document.getElementById('info')!;
+  const $ = <T extends Element>(sel: string, racine: ParentNode = document) =>
+    racine.querySelector<T>(sel)!;
+
+  /* L'adresse tapée suit l'utilisateur d'une vue à l'autre : on ne la fait pas
+     retaper parce qu'il a cliqué sur « Mot de passe oublié ». */
+  let email = '';
+
+  function dire(erreur: string | null, message: string | null = null) {
+    alerte.textContent = erreur ?? '';
+    info.textContent = message ?? '';
+  }
+
+  function montrer(vue: Vue) {
+    for (const s of document.querySelectorAll<HTMLElement>('[data-vue]')) {
+      s.hidden = s.dataset.vue !== vue;
+    }
+    for (const i of document.querySelectorAll<HTMLInputElement>('input[name="email"]')) {
+      i.value = email;
+    }
+    for (const b of document.querySelectorAll('[data-email-affiche]')) b.textContent = email;
+    $<HTMLElement>('#renvoi-connexion').hidden = true;
+    dire(null);
+
+    // L'URL garde la vue : un rechargement ne ramène pas à la case départ.
+    const url = new URL(window.location.href);
+    if (vue === 'connexion') url.searchParams.delete('vue');
+    else url.searchParams.set('vue', vue);
+    history.replaceState(null, '', url);
+
+    // Le focus suit : au clavier, on n'a pas à retraverser la page.
+    const section = $<HTMLElement>(`[data-vue="${vue}"]`);
+    const champ = [...section.querySelectorAll<HTMLInputElement>('input')].find(
+      (i) => !i.closest('[hidden]') && !i.value,
+    );
+    (champ ?? $<HTMLElement>('h1', section)).focus?.();
+  }
+
+  /** Bascule une vue à deux étapes (code, reinit) entre demande et saisie. */
+  function etape(vue: 'code' | 'reinit', laquelle: 'demande' | 'saisie') {
+    const section = $<HTMLElement>(`[data-vue="${vue}"]`);
+    for (const el of section.querySelectorAll<HTMLElement>('[data-etape]')) {
+      el.hidden = el.dataset.etape !== laquelle;
+    }
+    for (const b of section.querySelectorAll('[data-email-affiche]')) b.textContent = email;
+    if (laquelle === 'saisie') $<HTMLInputElement>('input[name="token"]', section).focus();
+  }
+
+  /**
+   * Branche un formulaire : empêche l'envoi natif, bloque le bouton pendant
+   * l'appel, affiche l'erreur. Le bouton bloqué évite le double envoi — un
+   * double clic sur « Recevoir un code » envoie deux e-mails et épuise la
+   * limite de Supabase (quelques e-mails par heure sur le plan gratuit).
+   */
+  function brancher(id: string, action: (f: FormData) => Promise<void>) {
+    const form = $<HTMLFormElement>(`#${id}`);
+    const bouton = $<HTMLButtonElement>('button[type="submit"]', form);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      dire(null);
+      const donnees = new FormData(form);
+      const saisi = donnees.get('email');
+      if (typeof saisi === 'string') email = saisi.trim();
+      bouton.disabled = true;
+      form.setAttribute('aria-busy', 'true');
+      try {
+        await action(donnees);
+      } catch (err) {
+        // Un refus de saisie porte déjà son message. Tout le reste passe par
+        // messageErreur, qui n'affiche jamais un texte technique en anglais.
+        dire(err instanceof Refus ? err.message : messageErreur(err));
+      } finally {
+        bouton.disabled = false;
+        form.removeAttribute('aria-busy');
+      }
+    });
+  }
+
+  /** Erreur de saisie détectée avant tout appel réseau. */
+  class Refus extends Error {}
+  const refus = (message: string) => new Refus(message);
+
+  const lire = (f: FormData, nom: string) => String(f.get(nom) ?? '');
+
+  function verifierEmail() {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw refus('Adresse email invalide.');
+  }
+
+  function verifierCode(token: string) {
+    if (!/^[0-9]{6}$/.test(token)) throw refus('Le code fait 6 chiffres.');
+  }
+
+  function verifierMotDePasse(mdp: string) {
+    if (mdp.length < 6) throw refus('Mot de passe trop court (6 caractères minimum).');
+  }
+
+  const entrer = () => window.location.assign(destination);
+
+  // ——— Connexion ———
+  brancher('f-connexion', async (f) => {
+    verifierEmail();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: lire(f, 'password'),
+    });
+    if (error) {
+      // Compte créé mais jamais confirmé : on propose de renvoyer le lien.
+      if (error.code === 'email_not_confirmed') $<HTMLElement>('#renvoi-connexion').hidden = false;
+      throw error;
+    }
+    entrer();
+  });
+
+  // ——— Inscription ———
+  brancher('f-inscription', async (f) => {
+    verifierEmail();
+    const password = lire(f, 'password');
+    verifierMotDePasse(password);
+    if (password !== lire(f, 'confirm')) throw refus('Les deux mots de passe ne correspondent pas.');
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      // Le lien de confirmation ramène ICI, sur le site. L'app passe sa propre
+      // adresse (`memora://auth-callback`) : chaque inscription revient d'où
+      // elle est partie. Cette adresse DOIT figurer dans les Redirect URLs de
+      // Supabase, sinon GoTrue l'ignore et renvoie vers la Site URL.
+      options: { emailRedirectTo: urlDeRetour() },
+    });
+    if (error) throw error;
+
+    // Confirmation d'e-mail désactivée côté Supabase : la session est déjà là.
+    if (data.session) return entrer();
+
+    /* Sinon, même écran que l'adresse soit neuve ou déjà prise. GoTrue répond
+       pareil dans les deux cas — un faux utilisateur sans identité pour une
+       adresse existante — précisément pour qu'on ne puisse pas tester, adresse
+       par adresse, qui a un compte chez nous. On ne défait pas cette protection
+       en affichant « ce compte existe déjà ». */
+    montrer('envoye');
+  });
+
+  // ——— Renvoi du lien de confirmation ———
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-renvoyer]')) {
+    b.addEventListener('click', async () => {
+      b.disabled = true;
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: urlDeRetour() },
+      });
+      b.disabled = false;
+      if (error) dire(messageErreur(error));
+      else dire(null, `Si ${email} attend une confirmation, un nouveau lien vient de partir.`);
+    });
+  }
+
+  /* Codes d'erreur qui, sur une demande de code, veulent dire « cette adresse
+     n'a pas de compte ». On les traite comme un succès, pour la même raison
+     qu'à l'inscription : ne pas révéler qui est inscrit. */
+  const COMPTE_INCONNU = new Set(['otp_disabled', 'signup_disabled', 'user_not_found']);
+  const inconnu = (e: AuthError | null) => e !== null && COMPTE_INCONNU.has(e.code ?? '');
+
+  // ——— Code de connexion ———
+  brancher('f-code-demande', async () => {
+    verifierEmail();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      // Une adresse inconnue ne crée PAS de compte (anti-multicompte, SCRUM-81).
+      // Les comptes ne naissent que par le formulaire d'inscription.
+      options: { shouldCreateUser: false },
+    });
+    if (error && !inconnu(error)) throw error;
+    etape('code', 'saisie');
+  });
+
+  brancher('f-code-saisie', async (f) => {
+    const token = lire(f, 'token').trim();
+    verifierCode(token);
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+    if (error) throw error;
+    entrer();
+  });
+
+  // ——— Mot de passe oublié ———
+  brancher('f-reinit-demande', async () => {
+    verifierEmail();
+    // Pas de `redirectTo` : le mail de réinitialisation porte un CODE, pas de
+    // lien (template `reset-password.html` de l'app, `{{ .Token }}`).
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) throw error;
+    etape('reinit', 'saisie');
+  });
+
+  /* Le code n'est valable qu'une fois. Si le changement de mot de passe échoue
+     APRÈS sa vérification — mot de passe refusé par le serveur — la session
+     ouverte par le code est toujours là : on ne le revérifie pas au second
+     essai, sinon on obtiendrait « code expiré » pour un code qui a marché. */
+  let codeReinitAccepte = false;
+
+  brancher('f-reinit-saisie', async (f) => {
+    const password = lire(f, 'password');
+    verifierMotDePasse(password);
+    if (!codeReinitAccepte) {
+      const token = lire(f, 'token').trim();
+      verifierCode(token);
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: 'recovery' });
+      if (error) throw error;
+      codeReinitAccepte = true;
+    }
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+    entrer();
+  });
+
+  // ——— Navigation entre vues ———
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-aller]')) {
+    b.addEventListener('click', () => {
+      const vue = b.dataset.aller as Vue;
+      if (vue === 'code' || vue === 'reinit') etape(vue, 'demande');
+      montrer(vue);
+    });
+  }
+
+  // ——— Au chargement ———
+  // Déjà connecté : rien à faire ici.
+  const { data } = await supabase.auth.getSession();
+  if (data.session) {
+    window.location.replace(destination);
+  } else {
+    const demandee = params.get('vue') as Vue | null;
+    // `envoye` n'a pas de sens sans l'adresse qui va avec : on ne l'ouvre pas
+    // depuis l'URL.
+    if (demandee && demandee !== 'envoye' && VUES.includes(demandee)) montrer(demandee);
+  }
+</script>

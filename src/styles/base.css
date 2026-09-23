@@ -161,6 +161,17 @@ b {
   font-weight: 600;
 }
 
+/* ——— `hidden` gagne toujours ———
+   Le navigateur masque `[hidden]` par une règle de spécificité minimale : la
+   moindre classe qui pose un `display` la bat, et l'élément « caché » s'affiche.
+   Arrivé sur /connexion, où des formulaires en `display: flex` restaient
+   visibles malgré leur attribut. Le `!important` est le seul outil qui dise
+   « l'attribut prime sur le style », et c'est exactement l'intention. */
+
+[hidden] {
+  display: none !important;
+}
+
 /* ——— Liens ———
    --accent-strong et non --accent : la menthe 500 est une surface à 2,2:1,
    illisible en texte. */

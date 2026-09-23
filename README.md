@@ -321,11 +321,11 @@ the incoming request » : elles priment donc sur le 307 automatique, bien que
 
 | Chemin | Rôle |
 |---|---|
-| `src/pages/` | routes (`index`, `support`, `confidentialite`, `mentions-legales`, `404`) |
-| `src/layouts/` | `Base.astro` (head, polices, en-tête, pied de page) et `Legal.astro` (pages de texte long) |
+| `src/pages/` | routes (`index`, `support`, `confidentialite`, `mentions-legales`, `404`, `connexion`, `auth/callback`) |
+| `src/layouts/` | `Base.astro` (head, polices, en-tête, pied de page), `Legal.astro` (pages de texte long), `Auth.astro` (connexion, `noindex`) |
 | `src/components/` | `Logo`, `Header`, `Footer`, `Phone`, `Faq` |
 | `src/styles/` | design system « La Clairière » |
-| `src/lib/` | `nav.ts` (liens), `offre.ts` (prix) ; Supabase et facturation aux lots 2 et 4 |
+| `src/lib/` | `nav.ts` (liens), `offre.ts` (prix), `supabase.ts` (client), `auth.ts` (messages, `?next=`) |
 | `public/fonts/` | Hanken Grotesk et JetBrains Mono, `.woff2` latin |
 | `public/brand/` | favicon, icônes, les quatre Gaston |
 | `public/screens/` | captures réelles de l'app, rognées et converties en WebP |
@@ -341,10 +341,36 @@ Il ne reste plus un seul `.html` dans `public/` : l'accueil est parti en
 
 ## Sécurité
 
-Seules des variables `PUBLIC_*` ont le droit d'entrer dans le bundle
-(`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`). **Aucune clé Stripe ni
-`service_role` ici** : toute la logique de paiement vit dans les Edge Functions
-Supabase de `~/memora_tage_mage/supabase/functions/`.
+Une seule clé entre dans le bundle : la clé **publishable** de Supabase
+(`sb_publishable_…`), écrite en dur dans `src/lib/supabase.ts`. Elle est
+publique par conception et n'ouvre que ce que la RLS accorde au rôle `anon`.
+**Aucune clé Stripe ni `service_role` ici** : toute la logique de paiement vit
+dans les Edge Functions Supabase de `~/memora_tage_mage/supabase/functions/`.
+Contrôle avant chaque mise en production :
+
+```bash
+grep -rlE "service_role|sk_live_|sk_test_|whsec_" dist/ && echo "FUITE" || echo ok
+```
+
+### Authentification (SCRUM-202)
+
+Même projet Supabase que l'app : un compte créé ici ouvre l'app, et
+inversement. Les flux sont ceux de l'app (`src/app/auth.tsx`) : connexion,
+inscription, code de connexion, mot de passe oublié par code à 6 chiffres.
+
+- **Flux implicite, pas PKCE** : le lien de confirmation doit marcher sur un
+  autre appareil que celui de l'inscription.
+- **Le site n'écrit jamais dans `user_state`.** Le pseudo s'y trouve, mais
+  c'est un blob que l'app réécrit en Last-Write-Wins : l'app le demande au
+  premier lancement.
+- **Aucune réponse ne dit si une adresse a un compte** (inscription, code,
+  réinitialisation) : GoTrue s'en garde, le site ne défait pas cette protection.
+- **Redirect URLs Supabase** : `https://www.tagepocket.fr/auth/callback` et
+  `http://localhost:8788/auth/callback` doivent y figurer, à côté de
+  `memora://auth-callback`. Sans elles, GoTrue ignore l'adresse de retour du site
+  et renvoie vers la Site URL.
+- Tester en local avec `npx wrangler dev --port 8788` plutôt que
+  `astro preview` : seul Wrangler applique `_headers`, donc la CSP.
 
 ### Où vit la facturation
 

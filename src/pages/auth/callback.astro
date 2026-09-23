@@ -1,0 +1,118 @@
+---
+/**
+ * /auth/callback — arrivée du lien de confirmation d'inscription (SCRUM-202).
+ *
+ * Seul le mail de confirmation d'inscription contient un lien : réinitialisation,
+ * code de connexion et réauthentification passent par un code à 6 chiffres
+ * (templates de `~/memora_tage_mage/supabase/email-templates/`). Cette page n'a
+ * donc qu'un cas nominal.
+ *
+ * Le lien du mail pointe sur Supabase (`/auth/v1/verify`), qui valide le jeton
+ * puis redirige ICI avec, dans le FRAGMENT de l'URL :
+ *   - succès : `#access_token=…&refresh_token=…&expires_in=…&type=signup`
+ *   - échec  : `#error=access_denied&error_code=otp_expired&error_description=…`
+ * Le fragment ne quitte jamais le navigateur : il n'est ni envoyé au serveur, ni
+ * transmis en Referer. On l'efface de la barre d'adresse dès qu'il est lu, pour
+ * que les jetons ne restent ni dans l'historique ni dans une capture d'écran.
+ *
+ * Un compte créé DANS L'APP ne passe jamais par ici : l'app demande à être
+ * rappelée sur `memora://auth-callback`. Chaque inscription revient d'où elle
+ * est partie.
+ */
+import Auth from '../../layouts/Auth.astro';
+---
+
+<Auth
+  title="Confirmation · TagePocket"
+  description="Confirmation de ton adresse e-mail TagePocket."
+>
+  <section data-etat="attente" aria-busy="true">
+    <h1>Un instant…</h1>
+    <p class="auth__sous-titre">On vérifie ton lien de confirmation.</p>
+  </section>
+
+  <section data-etat="ok" hidden>
+    <h1>Adresse confirmée</h1>
+    <p class="auth__sous-titre">
+      Ton compte est prêt. Tu es connecté ici, et tu peux te connecter dans l'app avec
+      la même adresse et le même mot de passe.
+    </p>
+    <p class="auth__liens">
+      <a id="continuer" href="/compte">Continuer</a>
+    </p>
+  </section>
+
+  <section data-etat="expire" hidden>
+    <h1>Ce lien ne marche plus</h1>
+    <p class="auth__sous-titre">
+      Il a expiré, ou il a déjà servi. Si tu as déjà cliqué dessus une première fois,
+      ton adresse est sans doute confirmée : essaie simplement de te connecter.
+    </p>
+    <p class="auth__liens">
+      <a href="/connexion">Se connecter</a>
+    </p>
+  </section>
+
+  <section data-etat="vide" hidden>
+    <h1>Rien à confirmer</h1>
+    <p class="auth__sous-titre">
+      Cette page sert à l'arrivée du lien de confirmation reçu par e-mail. Tu y es
+      arrivé sans lien.
+    </p>
+    <p class="auth__liens">
+      <a href="/connexion">Se connecter</a>
+    </p>
+  </section>
+
+  <section data-etat="erreur" hidden>
+    <h1>Ça n'a pas marché</h1>
+    <p class="auth__sous-titre" id="erreur-detail"></p>
+    <p class="auth__liens">
+      <a href="/connexion">Se connecter</a>
+    </p>
+  </section>
+</Auth>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { DESTINATION_PAR_DEFAUT, messageErreur } from '../../lib/auth';
+
+  type Etat = 'attente' | 'ok' | 'expire' | 'vide' | 'erreur';
+
+  function montrer(etat: Etat) {
+    for (const s of document.querySelectorAll<HTMLElement>('[data-etat]')) {
+      s.hidden = s.dataset.etat !== etat;
+    }
+  }
+
+  // Lu AVANT toute autre chose, puis effacé de la barre d'adresse.
+  const fragment = new URLSearchParams(window.location.hash.slice(1));
+  // Certaines versions de GoTrue posent l'erreur dans la query plutôt que dans
+  // le fragment : on regarde les deux.
+  const query = new URLSearchParams(window.location.search);
+  history.replaceState(null, '', window.location.pathname);
+
+  const erreur = fragment.get('error_code') ?? fragment.get('error') ?? query.get('error');
+  const accessToken = fragment.get('access_token');
+  const refreshToken = fragment.get('refresh_token');
+
+  if (erreur) {
+    montrer('expire');
+  } else if (!accessToken || !refreshToken) {
+    montrer('vide');
+  } else {
+    // `setSession` interroge Supabase avec le jeton avant de l'adopter : un
+    // fragment fabriqué à la main ne donne pas de session.
+    const { error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) {
+      document.getElementById('erreur-detail')!.textContent = messageErreur(error);
+      montrer('erreur');
+    } else {
+      document.getElementById('continuer')!.setAttribute('href', DESTINATION_PAR_DEFAUT);
+      montrer('ok');
+    }
+  }
+</script>
