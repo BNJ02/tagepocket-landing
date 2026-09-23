@@ -14,7 +14,8 @@
     "check": "astro check",
     "astro": "astro",
     "deploy": "astro build && wrangler deploy",
-    "deploy:dry": "astro build && wrangler deploy --dry-run"
+    "deploy:dry": "astro build && wrangler deploy --dry-run",
+    "test": "node --experimental-strip-types --no-warnings scripts/test-abonnement.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.0",

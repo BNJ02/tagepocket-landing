@@ -321,11 +321,11 @@ the incoming request » : elles priment donc sur le 307 automatique, bien que
 
 | Chemin | Rôle |
 |---|---|
-| `src/pages/` | routes (`index`, `support`, `confidentialite`, `mentions-legales`, `404`, `connexion`, `auth/callback`) |
-| `src/layouts/` | `Base.astro` (head, polices, en-tête, pied de page), `Legal.astro` (pages de texte long), `Auth.astro` (connexion, `noindex`) |
+| `src/pages/` | routes (`index`, `support`, `confidentialite`, `mentions-legales`, `404`, `connexion`, `auth/callback`, `compte`) |
+| `src/layouts/` | `Base.astro` (head, polices, en-tête, pied de page), `Legal.astro` (pages de texte long), `Auth.astro` (connexion, `noindex`), `Account.astro` (squelette de /compte) |
 | `src/components/` | `Logo`, `Header`, `Footer`, `Phone`, `Faq` |
 | `src/styles/` | design system « La Clairière » |
-| `src/lib/` | `nav.ts` (liens), `offre.ts` (prix), `supabase.ts` (client), `auth.ts` (messages, `?next=`) |
+| `src/lib/` | `nav.ts` (liens), `offre.ts` (prix), `supabase.ts` (client), `auth.ts` (messages, `?next=`), `guard.ts`, `abonnement.ts`, `session-cle.ts` |
 | `public/fonts/` | Hanken Grotesk et JetBrains Mono, `.woff2` latin |
 | `public/brand/` | favicon, icônes, les quatre Gaston |
 | `public/screens/` | captures réelles de l'app, rognées et converties en WebP |
@@ -369,6 +369,13 @@ inscription, code de connexion, mot de passe oublié par code à 6 chiffres.
   `http://localhost:8788/auth/callback` doivent y figurer, à côté de
   `memora://auth-callback`. Sans elles, GoTrue ignore l'adresse de retour du site
   et renvoie vers la Site URL.
+- **Déconnexion locale** (`signOut({ scope: 'local' })`) : sans argument,
+  Supabase révoque TOUTES les sessions du compte, et l'app serait déconnectée
+  à son prochain rafraîchissement de jeton.
+- **`/compte` (SCRUM-203)** : coquille publique, données chargées après la
+  garde par des requêtes RLS. La garde (`src/lib/guard.ts`) est de l'UX, pas de
+  la sécurité. L'état affiché (`src/lib/abonnement.ts`, testé par `npm test`)
+  s'incline devant `is_premium()` en cas de désaccord.
 - Tester en local avec `npx wrangler dev --port 8788` plutôt que
   `astro preview` : seul Wrangler applique `_headers`, donc la CSP.
 

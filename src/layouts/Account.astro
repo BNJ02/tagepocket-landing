@@ -1,0 +1,117 @@
+---
+/**
+ * Gabarit des pages /compte/* (SCRUM-203, SCRUM-204).
+ *
+ * La page arrive avec un squelette `aria-busy` VISIBLE et un contenu MASQUÉ.
+ * Le script de la page vérifie la session (`guard.ts`), charge les données,
+ * remplit le contenu, puis appelle `devoiler()`. Aucun texte personnel n'est
+ * jamais dans le HTML servi : il n'y a donc aucun « flash » de contenu privé
+ * possible, pas même pour un visiteur non connecté qui couperait JavaScript.
+ *
+ * `noindex` ici, `Disallow: /compte` dans robots.txt. Les deux à la fois : le
+ * Disallow épargne le crawl, le noindex rattrape une URL qui aurait été
+ * découverte par un lien externe.
+ */
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<Base title={title} description={description} noindex>
+  <div class="page compte">
+    <div data-attente aria-busy="true" aria-label="Chargement de ton compte">
+      <div class="squelette squelette--titre"></div>
+      <div class="squelette squelette--carte"></div>
+      <div class="squelette squelette--carte squelette--courte"></div>
+      <noscript>
+        <p class="compte__noscript">
+          Ton espace a besoin de JavaScript pour afficher ton compte. Active-le, ou
+          retrouve ton compte dans l'app.
+        </p>
+      </noscript>
+    </div>
+    <div data-contenu hidden>
+      <slot />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .compte {
+    max-width: 40rem;
+    padding-block: var(--space-12) var(--space-24);
+  }
+
+  /* ——— Squelette ———
+     Mousse se tait : des blocs de pierre, sans texte, qui respirent à peine. */
+  .squelette {
+    border-radius: var(--radius);
+    background: var(--track);
+  }
+
+  .squelette--titre {
+    width: 40%;
+    height: 2.25rem;
+  }
+
+  .squelette--carte {
+    height: 10rem;
+    margin-top: var(--space-6);
+  }
+
+  .squelette--courte {
+    height: 5rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .squelette {
+      animation: respire 1.6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes respire {
+    50% {
+      opacity: 0.55;
+    }
+  }
+
+  .compte__noscript {
+    margin-top: var(--space-6);
+    color: var(--ink-2);
+  }
+
+  /* ——— Contenu du slot ——— */
+
+  .compte :global(h1) {
+    font-size: var(--text-2xl);
+  }
+
+  .compte :global(.compte__email) {
+    margin-top: var(--space-2);
+    color: var(--ink-2);
+    overflow-wrap: anywhere;
+  }
+
+  .compte :global(.carte) {
+    margin-top: var(--space-6);
+    padding: var(--space-6);
+    background: var(--app-card);
+    border: 1px solid var(--bois-300);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 0 var(--bois-300);
+  }
+
+  .compte :global(.carte h2) {
+    font-size: var(--text-lg);
+  }
+
+  .compte :global(.carte p) {
+    margin-top: var(--space-2);
+    color: var(--ink-2);
+  }
+</style>

@@ -1,0 +1,366 @@
+---
+/**
+ * /compte — l'espace de l'utilisateur connecté (SCRUM-203).
+ *
+ * Le HTML ci-dessous est une coquille : identique pour tout le monde, sans une
+ * seule donnée personnelle. Tout ce qui est propre à l'utilisateur est posé
+ * par le script, APRÈS la garde et APRÈS les requêtes protégées par la RLS.
+ * Voir `src/lib/guard.ts` — la garde est de l'UX, pas de la sécurité.
+ *
+ * L'état affiché vient de deux sources, lues en parallèle :
+ *   - `subscriptions` (RLS : ses propres lignes) → le détail : formule, dates ;
+ *   - `is_premium()` → l'accès, tranché par le serveur.
+ * En cas de désaccord, `is_premium()` gagne (voir `abonnement.ts`).
+ *
+ * Retour de paiement : `?checkout=success` ne déclenche AUCUNE écriture. Cette
+ * adresse se tape à la main dans la barre d'adresse, elle ne prouve rien.
+ * Seul le webhook Stripe écrit (SCRUM-206). La page se contente de RELIRE,
+ * quelques fois, le temps que le webhook arrive.
+ */
+import Account from '../../layouts/Account.astro';
+import { PORTAIL_PRET, SUPPRESSION_COMPTE, TARIFS_TARGET } from '../../lib/nav';
+---
+
+<Account title="Mon compte · TagePocket" description="Ton compte et ton abonnement TagePocket.">
+  <h1>Mon compte</h1>
+  <p class="compte__email" data-email></p>
+
+  <p class="bandeau" data-bandeau role="status" hidden></p>
+
+  <section class="carte abo" aria-labelledby="abo-titre">
+    <img class="abo__gaston" data-gaston src="/brand/gaston-content.svg" alt="" width="72" height="72" />
+    <div class="abo__corps">
+      <p class="abo__badge" data-badge></p>
+      <h2 id="abo-titre" data-titre></h2>
+      <progress class="abo__jauge" data-jauge max="14" value="0" hidden></progress>
+      <p data-texte></p>
+      <p class="abo__actions">
+        <a class="bouton bouton--menthe" data-premium href={TARIFS_TARGET} hidden></a>
+        {
+          PORTAIL_PRET && (
+            <button type="button" class="bouton bouton--bois" data-gerer hidden>
+              Gérer mon abonnement
+            </button>
+          )
+        }
+      </p>
+    </div>
+  </section>
+
+  <section class="carte" aria-labelledby="app-titre">
+    <h2 id="app-titre">Dans l'app</h2>
+    <p>
+      Connecte-toi dans l'app TagePocket avec la même adresse et le même mot de passe :
+      ton abonnement y est reconnu automatiquement.
+    </p>
+  </section>
+
+  <p class="compte__pied">
+    <button type="button" class="bouton bouton--bois" data-deconnexion>Se déconnecter</button>
+    {SUPPRESSION_COMPTE.ready && <a href={SUPPRESSION_COMPTE.href}>{SUPPRESSION_COMPTE.label}</a>}
+  </p>
+</Account>
+
+<style>
+  .bandeau {
+    margin-top: var(--space-6);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    color: var(--ok-ink);
+    background: var(--ok-soft);
+  }
+
+  .abo {
+    display: flex;
+    gap: var(--space-6);
+    align-items: flex-start;
+  }
+
+  .abo__gaston {
+    flex: none;
+  }
+
+  .abo__corps {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .abo__badge {
+    display: inline-block;
+    margin: 0 0 var(--space-2) !important;
+    padding: 0.1rem var(--space-3);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: var(--radius-full);
+    color: var(--bois-900);
+    background: var(--bois-100);
+  }
+
+  /* L'or est la couleur du premium dans l'app ; le texte reste en encre. */
+  .abo__badge[data-ton='premium'] {
+    color: var(--ink);
+    background: var(--gold);
+  }
+
+  .abo__badge[data-ton='bad'] {
+    color: var(--bad-ink);
+    background: var(--bad-soft);
+  }
+
+  /* Eau se remplit : la jauge de l'essai. Jamais un bouton. */
+  .abo__jauge {
+    display: block;
+    width: 100%;
+    height: 10px;
+    margin-top: var(--space-3);
+    appearance: none;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: var(--eau-300);
+    overflow: hidden;
+  }
+
+  .abo__jauge::-webkit-progress-bar {
+    background: var(--eau-300);
+  }
+
+  .abo__jauge::-webkit-progress-value {
+    background: var(--eau-500);
+    border-radius: var(--radius-full);
+  }
+
+  .abo__jauge::-moz-progress-bar {
+    background: var(--eau-500);
+    border-radius: var(--radius-full);
+  }
+
+  .abo__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4) !important;
+  }
+
+  .bouton {
+    display: inline-block;
+    padding: var(--space-2) var(--space-6);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    border: 0;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+  }
+
+  .bouton--menthe {
+    color: var(--accent-ink);
+    background: var(--accent);
+    box-shadow: 0 4px 0 var(--accent-press);
+  }
+
+  .bouton--menthe:hover {
+    color: var(--brand-ink);
+    background: var(--accent-press);
+  }
+
+  .bouton--bois {
+    color: var(--bois-900);
+    background: var(--bois-100);
+    box-shadow: 0 4px 0 var(--bois-300);
+  }
+
+  .bouton--bois:hover {
+    background: var(--bois-200);
+  }
+
+  .compte__pied {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4) var(--space-8);
+    margin-top: var(--space-8);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 30rem) {
+    .abo {
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+  }
+</style>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { devoiler, requireSession, sessionPerimee } from '../../lib/guard';
+  import { etatAbonnement, type Etat, type LigneAbonnement } from '../../lib/abonnement';
+  import { ESSAI_JOURS, euros } from '../../lib/offre';
+
+  const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+
+  const COLONNES =
+    'status, plan, current_period_end, cancel_at_period_end, trial_end, canceled_at, created_at';
+
+  const jourMois = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const le = (d: Date | null) => (d ? jourMois.format(d) : 'la prochaine échéance');
+
+  class Refus401 extends Error {}
+
+  /** Lit l'état, ou lève Refus401 si le serveur ne reconnaît plus le jeton. */
+  async function lireEtat(): Promise<Etat> {
+    const [abos, premium] = await Promise.all([
+      supabase.from('subscriptions').select(COLONNES),
+      supabase.rpc('is_premium'),
+    ]);
+    if (abos.status === 401 || premium.status === 401) throw new Refus401();
+    if (abos.error) throw abos.error;
+    if (premium.error) throw premium.error;
+
+    const etat = etatAbonnement((abos.data ?? []) as LigneAbonnement[]);
+    /* Le serveur a le dernier mot sur l'accès. Une ligne encore « active »
+       alors que `is_premium()` dit non, c'est un webhook de résiliation perdu
+       (le garde-fou des 2 jours a joué) : on n'annonce pas un accès que
+       l'app refusera. */
+    if (premium.data === false && (etat.type === 'essai' || etat.type === 'actif' || etat.type === 'impaye')) {
+      return { type: 'termine', formule: etat.formule, fin: 'echeance' in etat ? etat.echeance : etat.fin };
+    }
+    return etat;
+  }
+
+  function afficher(etat: Etat, checkoutReussi: boolean) {
+    const badge = $('[data-badge]');
+    const titre = $('[data-titre]');
+    const texte = $('[data-texte]');
+    const jauge = $<HTMLProgressElement>('[data-jauge]');
+    const premium = $<HTMLAnchorElement>('[data-premium]');
+    const gerer = document.querySelector<HTMLButtonElement>('[data-gerer]');
+
+    let gaston = 'gaston-content';
+    let ton = '';
+    jauge.hidden = true;
+    premium.hidden = true;
+    if (gerer) gerer.hidden = etat.type === 'gratuit';
+
+    switch (etat.type) {
+      case 'gratuit':
+        badge.textContent = 'Gratuit';
+        titre.textContent = 'Tu utilises la version gratuite';
+        texte.textContent =
+          `Le premium débloque les vies illimitées, les paliers Expert, les statistiques détaillées, les corrections et les fiches de révision. ${ESSAI_JOURS} jours d'essai, sans prélèvement avant la fin.`;
+        premium.textContent = 'Découvrir le premium';
+        premium.hidden = false;
+        break;
+
+      case 'essai':
+        ton = 'premium';
+        badge.textContent = 'Essai';
+        titre.textContent = `Essai gratuit · jour ${etat.jour} sur ${etat.total}`;
+        jauge.max = etat.total;
+        jauge.value = etat.jour;
+        jauge.setAttribute('aria-label', `Jour ${etat.jour} sur ${etat.total} de l'essai`);
+        jauge.hidden = false;
+        if (etat.resilie) {
+          gaston = 'gaston-endormi';
+          texte.textContent = `Tu as résilié : ton essai s'arrête le ${le(etat.fin)}, et rien ne sera prélevé.`;
+        } else {
+          texte.textContent = `Formule ${etat.formule.nom.toLowerCase()}. Premier prélèvement de ${euros(etat.formule.prix)} le ${le(etat.fin)}, sauf si tu résilies avant.`;
+        }
+        break;
+
+      case 'actif':
+        ton = 'premium';
+        badge.textContent = 'Premium';
+        titre.textContent = `Premium · ${etat.formule.nom}`;
+        if (etat.resilie) {
+          gaston = 'gaston-endormi';
+          texte.textContent = `Résilié : ton accès premium dure jusqu'au ${le(etat.echeance)}. Plus aucun prélèvement.`;
+        } else {
+          texte.textContent = `Prochain prélèvement de ${euros(etat.formule.prix)} le ${le(etat.echeance)}.`;
+        }
+        break;
+
+      case 'impaye':
+        ton = 'bad';
+        gaston = 'gaston-inquiet';
+        badge.textContent = 'Paiement en échec';
+        titre.textContent = "Ton dernier paiement n'est pas passé";
+        texte.textContent =
+          'Ton accès premium est maintenu pour le moment. Mets à jour ton moyen de paiement pour le garder : le prélèvement sera retenté automatiquement dans les prochains jours.';
+        break;
+
+      case 'termine':
+        gaston = 'gaston-endormi';
+        badge.textContent = 'Terminé';
+        titre.textContent = 'Ton abonnement est terminé';
+        texte.textContent = `${etat.fin ? `Il a pris fin le ${le(etat.fin)}. ` : ''}Ta progression est intacte : tu peux reprendre quand tu veux.`;
+        premium.textContent = 'Reprendre le premium';
+        premium.hidden = false;
+        break;
+    }
+
+    if (checkoutReussi) gaston = 'gaston-fier';
+    badge.dataset.ton = ton;
+    $<HTMLImageElement>('[data-gaston]').src = `/brand/${gaston}.svg`;
+  }
+
+  const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const abonne = (e: Etat) => e.type === 'essai' || e.type === 'actif';
+
+  async function main() {
+    const session = await requireSession();
+    if (!session) return;
+
+    $('[data-email]').textContent = session.user.email ?? '';
+
+    const params = new URLSearchParams(window.location.search);
+    const retourPaiement = params.get('checkout') === 'success';
+    if (retourPaiement) {
+      // Un rechargement ne doit pas rejouer le message de bienvenue.
+      params.delete('checkout');
+      const reste = params.toString();
+      history.replaceState(null, '', window.location.pathname + (reste ? `?${reste}` : ''));
+    }
+
+    try {
+      let etat = await lireEtat();
+      /* Le webhook arrive en général dans la seconde, parfois un peu après la
+         redirection de Stripe. Trois relectures espacées d'une seconde, pas
+         plus : au-delà, on le dit plutôt que de faire tourner la page. */
+      for (let i = 0; retourPaiement && !abonne(etat) && i < 3; i++) {
+        await attendre(1000);
+        etat = await lireEtat();
+      }
+
+      const reussi = retourPaiement && abonne(etat);
+      afficher(etat, reussi);
+
+      if (retourPaiement) {
+        const bandeau = $('[data-bandeau]');
+        bandeau.textContent = reussi
+          ? 'Bienvenue dans le premium ! Ouvre l’app : ton accès y est déjà actif.'
+          : 'Ton paiement est en cours de confirmation. Recharge cette page dans une minute.';
+        bandeau.hidden = false;
+      }
+    } catch (e) {
+      if (e instanceof Refus401) return sessionPerimee();
+      $('[data-badge]').textContent = '';
+      $('[data-titre]').textContent = 'Impossible de charger ton abonnement';
+      $('[data-texte]').textContent = 'Vérifie ta connexion, puis recharge la page.';
+      $<HTMLImageElement>('[data-gaston]').src = '/brand/gaston-inquiet.svg';
+    }
+
+    devoiler();
+  }
+
+  // Déconnexion LOCALE : `signOut()` sans argument révoque TOUTES les sessions
+  // du compte, et déconnecterait l'app sur le téléphone à son prochain
+  // rafraîchissement de jeton. Se déconnecter du site ne doit toucher que le site.
+  $<HTMLButtonElement>('[data-deconnexion]').addEventListener('click', async () => {
+    await supabase.auth.signOut({ scope: 'local' });
+    window.location.assign('/');
+  });
+
+  main();
+</script>

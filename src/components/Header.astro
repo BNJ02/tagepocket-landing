@@ -22,7 +22,7 @@ const path = Astro.url.pathname;
             </a>
           ))}
           {cta && (
-            <a href={cta.href} class="hdr__cta">
+            <a href={cta.href} class="hdr__cta" data-cta-compte>
               {cta.label}
             </a>
           )}
@@ -31,6 +31,30 @@ const path = Astro.url.pathname;
     }
   </div>
 </header>
+
+<script>
+  /* « Se connecter » devient « Mon compte » quand une session existe.
+   *
+   * On regarde seulement si la clé est PRÉSENTE dans le localStorage, sans
+   * charger le SDK ni interroger Supabase : l'en-tête est sur toutes les pages,
+   * landing comprise, et n'a pas à payer 55 Ko pour un libellé. Une session
+   * expirée affiche donc « Mon compte » à tort — sans conséquence : /compte
+   * vérifie pour de bon, et renvoie vers /connexion si besoin. */
+  import { CLE_SESSION } from '../lib/session-cle';
+  import { HEADER_CTA_CONNECTE } from '../lib/nav';
+
+  let connecte = false;
+  try {
+    connecte = window.localStorage.getItem(CLE_SESSION) !== null;
+  } catch {
+    // Stockage bloqué (navigation privée stricte) : on garde « Se connecter ».
+  }
+  const cta = document.querySelector<HTMLAnchorElement>('[data-cta-compte]');
+  if (connecte && cta) {
+    cta.href = HEADER_CTA_CONNECTE.href;
+    cta.textContent = HEADER_CTA_CONNECTE.label;
+  }
+</script>
 
 <style>
   .hdr {
@@ -78,6 +102,9 @@ const path = Astro.url.pathname;
     border-radius: var(--radius-full);
     background: var(--accent);
     color: var(--accent-ink) !important;
+    /* Un bouton ne se casse pas en deux lignes : sur un téléphone de 360 px,
+       « Se connecter » passait sous lui-même. */
+    white-space: nowrap;
   }
 
   .hdr__cta:hover {
@@ -87,6 +114,10 @@ const path = Astro.url.pathname;
   @media (max-width: 30rem) {
     .hdr__nav {
       gap: var(--space-4);
+    }
+
+    .hdr__cta {
+      padding-inline: var(--space-3);
     }
   }
 </style>

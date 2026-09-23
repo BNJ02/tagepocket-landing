@@ -20,6 +20,7 @@
  * le site, on la remplace sans forcer une mise à jour de l'app.
  */
 import { createClient } from '@supabase/supabase-js';
+import { CLE_SESSION } from './session-cle';
 
 export const SUPABASE_URL = 'https://lhxgxjkowkaobhuzxctv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_DlnElnAVUwQs7NSDypOwgw_LA5Jdi0g';
@@ -39,6 +40,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
      * changer de défaut, et la panne passerait inaperçue sur un seul appareil. */
     flowType: 'implicit',
     persistSession: true,
+    // Explicite, parce que l'en-tête la lit sans charger le SDK (session-cle.ts).
+    storageKey: CLE_SESSION,
     autoRefreshToken: true,
     /* Désactivé : /auth/callback lit le fragment LUI-MÊME, puis appelle
      * `setSession`. Le SDK, lui, se lance de façon asynchrone dès l'import et

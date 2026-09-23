@@ -31,16 +31,41 @@ export const MAIN_NAV: NavLink[] = [
  * `/tarifs` n'existe pas encore (SCRUM-209) et la même discipline que ci-dessus
  * s'applique : on ne lie pas vers une page absente. En attendant, le bouton
  * renvoie à la section tarifs de la page d'accueil, qui porte déjà les deux
- * formules. Basculer sur `/tarifs` dans le commit qui livre la page.
+ * formules. `/#tarifs` et non `#tarifs` : le lien sert aussi depuis /compte.
+ * Basculer sur `/tarifs` dans le commit qui livre la page.
  */
-export const TARIFS_TARGET = MAIN_NAV[0].ready ? '/tarifs' : '#tarifs';
+export const TARIFS_TARGET = MAIN_NAV[0].ready ? '/tarifs' : '/#tarifs';
 
 /** Appel à l'action de l'en-tête. */
 export const HEADER_CTA: NavLink = {
   href: '/connexion',
   label: 'Se connecter',
-  ready: false, // SCRUM-202
+  ready: true,
 };
+
+/**
+ * Ce que devient l'appel à l'action une fois connecté. L'échange se fait côté
+ * navigateur, dans Header.astro : le HTML est le même pour tout le monde.
+ */
+export const HEADER_CTA_CONNECTE: NavLink = {
+  href: '/compte',
+  label: 'Mon compte',
+  ready: true,
+};
+
+/** Suppression du compte depuis /compte. */
+export const SUPPRESSION_COMPTE: NavLink = {
+  href: '/compte/supprimer',
+  label: 'Supprimer mon compte',
+  ready: false, // SCRUM-204
+};
+
+/**
+ * Le bouton « Gérer mon abonnement » ouvre le portail client Stripe, par
+ * l'Edge Function `create-portal-session` (SCRUM-208). Tant qu'elle n'existe
+ * pas, le bouton n'est pas rendu — même discipline que les liens ci-dessus.
+ */
+export const PORTAIL_PRET = false;
 
 /** Liens légaux du pied de page. */
 export const LEGAL_NAV: NavLink[] = [
