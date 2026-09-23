@@ -30,11 +30,11 @@ Node 20 pour Expo : toujours `nvm use` en entrant ici.
 
 ## Hébergement — Workers Static Assets
 
-Le site était sur **Cloudflare Pages**. Il passe sur **Workers + Static Assets**,
-que Cloudflare recommande pour tout nouveau site ; Pages n'est plus maintenu que
-pour l'existant. Bénéfice immédiat : toute la configuration de déploiement est
-versionnée dans `wrangler.jsonc`, alors que les réglages Pages ne vivaient que
-dans le dashboard.
+Le site était sur **Cloudflare Pages**. Il est servi depuis le 23/09/2026 par
+**Workers + Static Assets**, que Cloudflare recommande pour tout nouveau site ;
+Pages n'est plus maintenu que pour l'existant. Bénéfice immédiat : toute la
+configuration de déploiement est versionnée dans `wrangler.jsonc`, alors que les
+réglages Pages ne vivaient que dans le dashboard.
 
 Le routage est déclaré dans `wrangler.jsonc` :
 
@@ -98,44 +98,50 @@ que `+short` n'affiche pas. Utiliser
 |---|---|---|
 | SPF et MX du domaine d'envoi Resend | posés sur `send.send.tagepocket.fr` — un niveau de trop, donc **aucun SPF** et bounces SES non routés | posés sur `send` |
 | Apex | `A @ → 213.186.33.5` + `TXT @ → 4\|https://www.tagepocket.fr`, mécanisme propriétaire OVH sans certificat — `https://tagepocket.fr` renvoyait `Connection reset` | `AAAA @ → 100::` proxié (prefix discard) + Redirect Rule |
-| DNSSEC | géré par OVH | désactivé ; à réactiver depuis Cloudflare, avec un nouveau DS à déclarer chez OVH |
+| DNSSEC | géré par OVH | signé par Cloudflare, DS `2371 13 2 5D694526…` déclaré chez OVH (onglet **DS Records**, pas le bouton « Délégation sécurisée » qui ne pilote que les zones OVH) |
 
-#### Reste à faire
+Réglages de zone durcis : `ssl=strict`, `always_use_https=on`, `min_tls_version=1.2`,
+et **`email_obfuscation=off`** — voir plus bas.
 
-- [ ] **Redirect Rule apex** — phase `http_request_dynamic_redirect`, 301
-      `tagepocket.fr` → `https://www.tagepocket.fr` + chemin et query. Sans elle,
-      l'`AAAA 100::` renvoie **522** : l'apex est cassé.
-- [ ] **Email Obfuscation et Server Side Exclude à `off`** — Scrape Shield réécrit
-      les `mailto:` en `/cdn-cgi/l/email-protection` et injecte un script. Le lien
-      devient mort sans JavaScript et le HTML servi ne correspond plus au build.
-- [ ] **Bascule du Worker** — bloc `routes` dans `wrangler.jsonc`, `workers_dev` à
-      `false`, `npm run deploy`. Puis supprimer le projet Pages.
-- [ ] **DNSSEC** — réactiver côté Cloudflare, déclarer le nouveau DS chez OVH.
+#### Scrape Shield réécrit le HTML servi
 
-### Déploiement continu — aujourd'hui, par Pages
+Cloudflare active **Email Obfuscation** par défaut sur toute zone. Il remplace
+`<a href="mailto:…">` par `/cdn-cgi/l/email-protection` et injecte un script de
+décodage : l'adresse devient **inaccessible sans JavaScript**, ce qui est un
+problème de conformité sur des mentions légales, et le HTML servi ne correspond
+plus au build. Désactivé le 23/09/2026.
 
-En attendant la bascule du Worker, la production est servie par le projet **Pages**
-`tagepocket-landing`, qui construit le site Astro à chaque push sur `main` depuis
-`BNJ02/tagepocket-landing` :
+Le contrôle qui le détecte est un `cmp` entre la page servie et `dist/index.html` :
+il doit être vrai à l'octet près. Une simple lecture de la page ne le montre pas.
 
-| Réglage | Valeur |
+`server_side_exclude` reste `on` — Cloudflare l'a retiré du dashboard — mais il
+n'agit que sur du contenu encadré par `<!--sse-->…<!--/sse-->`, que le site ne
+produit pas. Effet nul.
+
+### Déploiement continu
+
+`www.tagepocket.fr` est un **custom domain du Worker** depuis le 23/09/2026. Le
+projet Pages n'a plus de domaine.
+
+La bascule a demandé de retirer le domaine du projet Pages **avant** de l'ajouter
+au Worker : l'API refuse d'écraser un enregistrement DNS qu'elle n'a pas créé
+(`already has externally managed DNS records`, code 100117), et le dashboard ne
+propose aucun remplacement. Il y a donc une coupure d'une à deux minutes,
+incompressible, à faire en enchaînant les deux gestes.
+
+Attention au piège du formulaire *Connect to tagepocket.fr* : laisser le champ
+*Subdomain* vide vise l'**apex**, dont l'`AAAA 100::` porte la redirection. Saisir
+`www`.
+
+| Réglage Workers Builds | Valeur |
 |---|---|
+| Dépôt | `BNJ02/tagepocket-landing`, branche `main` |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
+| Deploy command | `npx wrangler deploy` |
 | Root directory | racine du dépôt |
-| `NODE_VERSION` (production et preview) | `22` |
-| Build caching | activé |
+| Version de Node | lue dans `.nvmrc` (`22`) |
 
-Ces réglages ont été posés le 22/09/2026. **Avant cela, la commande de build
-était vide** : un push aurait déployé la racine du dépôt, où `index.html` n'est
-plus depuis son passage dans `public/`, et cassé le site.
-
-Le Worker reste déployé en parallèle sur son sous-domaine `workers.dev`, prêt à
-reprendre la production. `npm run deploy` le met à jour sans toucher à Pages.
-
-Note : Pages ignore `.assetsignore`, qui est un mécanisme propre aux Workers, et
-sert donc `/.assetsignore`. Sans conséquence — le fichier ne contient que des
-noms de fichiers — et le problème disparaît à la bascule.
+`npm run deploy` fait la même chose depuis le poste local.
 ## Arborescence
 
 | Chemin | Rôle |
