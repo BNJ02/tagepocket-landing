@@ -1,0 +1,49 @@
+---
+/**
+ * Cadre de téléphone autour d'une capture réelle de l'app.
+ *
+ * Les captures sont prises sur l'appareil Android de test (1080×2400), puis
+ * rognées de la barre d'état et de la barre de navigation — deux éléments du
+ * système, pas de l'app — et converties en WebP. Voir le README.
+ *
+ * Pas de mockup 3D ni d'ombre photoréaliste : un cadre sobre suffit à dire
+ * « c'est un écran de téléphone », et tout le reste distrait de ce qu'on veut
+ * montrer, c'est-à-dire l'écran lui-même.
+ */
+interface Props {
+  src: string;
+  /** Décrit ce que l'écran montre. Vide si la légende voisine le dit déjà. */
+  alt: string;
+  /** Largeur d'affichage en px. La source fait 560 px : 280 est le rendu 2×. */
+  width?: number;
+  /** `eager` pour la seule capture visible au chargement. */
+  loading?: 'lazy' | 'eager';
+}
+
+const { src, alt, width = 280, loading = 'lazy' } = Astro.props;
+
+/* Ratio de la source, rognée : 560 × 1136. Les attributs width/height du <img>
+   réservent la place avant le chargement — sans eux la page saute (CLS). */
+const height = Math.round((width * 1136) / 560);
+---
+
+<div class="phone" style={`--w: ${width}px`}>
+  <img src={src} alt={alt} width={width} height={height} loading={loading} decoding="async" />
+</div>
+
+<style>
+  .phone {
+    width: var(--w);
+    max-width: 100%;
+    padding: 7px;
+    border-radius: 28px;
+    background: var(--encre);
+    box-shadow: 0 18px 40px -18px rgba(2, 17, 13, 0.45);
+  }
+
+  .phone img {
+    width: 100%;
+    height: auto;
+    border-radius: 21px;
+  }
+</style>

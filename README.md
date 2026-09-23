@@ -2,9 +2,10 @@
 
 Site **tagepocket.fr** : vitrine, compte utilisateur et abonnement premium.
 
-Projet **Astro** en `output: 'static'`, déployé sur **Cloudflare Pages** →
-`https://www.tagepocket.fr` (apex `tagepocket.fr` en 301 vers `www`).
-Zone DNS chez OVHcloud. Un `push` sur `main` redéploie automatiquement.
+Projet **Astro** en `output: 'static'`, servi par **Cloudflare Workers + Static
+Assets** → `https://www.tagepocket.fr` (apex `tagepocket.fr` en 301 vers `www`).
+Zone DNS chez Cloudflare, domaine et mail chez OVHcloud. Un `push` sur `main`
+redéploie automatiquement via Workers Builds.
 
 Chantier suivi dans l'epic Jira **SCRUM-192**.
 
@@ -227,28 +228,64 @@ vers un 404 : le socle part en production avant les pages, et un lien mort en
 ligne est indexé, cliqué, et donne l'impression d'un site cassé. Passer `ready` à
 `true` dans le commit qui livre la page.
 
+`TARIFS_TARGET` applique la même règle au bouton « Commencer l'essai » : il
+renvoie à la section `#tarifs` de l'accueil tant que `/tarifs` (SCRUM-209)
+n'existe pas, et bascule tout seul le jour où le drapeau passe à `true`.
+
+### Captures d'écran de l'app
+
+`public/screens/*.webp` sont des **captures réelles**, jamais des maquettes.
+Procédure, avec l'appareil Android branché en USB (compétence `pixel-check` du
+dépôt de l'app) :
+
+```bash
+adb exec-out screencap -p > shot.png     # 1080 × 2400
+```
+
+Puis rognage et conversion, en Python (ImageMagick n'est pas installé) :
+
+```python
+from PIL import Image
+# 96 px en haut, 114 px en bas : la barre d'état et la barre de navigation
+# appartiennent au système, pas à l'app.
+im = Image.open('shot.png').convert('RGB').crop((0, 96, 1080, 2286))
+im.resize((560, 1136), Image.LANCZOS).save('public/screens/x.webp', 'WEBP',
+                                           quality=82, method=6)
+```
+
+560 px de large pour un affichage à 280 px, soit le rendu 2×. `Phone.astro`
+calcule `height` à partir de ce ratio : les attributs `width`/`height` du `<img>`
+réservent la place avant le chargement, sinon la page saute.
+
+> ⚠️ **Le compte de test est presque vide** (0 jour de série, score estimé à
+> 26/600, 21 % de précision). Les écrans Stats et Profil ne sont donc pas
+> publiables tels quels sur une page qui vend l'app. Les quatre captures
+> retenues n'affichent aucun chiffre qui dessert : Parcours, question,
+> correction, révisions. Pour montrer les Stats, il faut d'abord un compte de
+> démonstration crédible.
+
 ## Arborescence
 
 | Chemin | Rôle |
 |---|---|
-| `src/pages/` | routes (`404.astro`, `design.astro` temporaire) |
+| `src/pages/` | routes (`index.astro`, `404.astro`, `design.astro` temporaire) |
 | `src/layouts/` | `Base.astro` — head, polices, en-tête, pied de page |
-| `src/components/` | `Logo`, `Header`, `Footer` ; le reste en SCRUM-196 |
+| `src/components/` | `Logo`, `Header`, `Footer`, `Phone`, `Faq` |
 | `src/styles/` | design system « La Clairière » |
-| `src/lib/` | `nav.ts` ; client Supabase et facturation aux lots 2 et 4 |
+| `src/lib/` | `nav.ts` (liens), `offre.ts` (prix) ; Supabase et facturation aux lots 2 et 4 |
 | `public/fonts/` | Hanken Grotesk et JetBrains Mono, `.woff2` latin |
 | `public/brand/` | favicon, icônes, les quatre Gaston |
-| `src/lib/` | client Supabase, appels de facturation, garde de session — lots 2 et 4 |
-| `public/` | servi verbatim ; contient encore les 4 pages HTML héritées |
+| `public/screens/` | captures réelles de l'app, rognées et converties en WebP |
+| `public/` | servi verbatim ; contient encore les 3 pages HTML héritées |
 | `public/.well-known/` | universal links (AASA + assetlinks) — SCRUM-217 |
 | `public/.assetsignore` | fichiers de `dist/` à ne pas publier |
 | `wrangler.jsonc` | configuration de déploiement Cloudflare Workers |
 
-Les pages `index.html`, `confidentialite.html`, `support.html` et
-`mentions-legales.html` restent des fichiers statiques dans `public/` : elles
-sont portées en `.astro` par **SCRUM-196** (landing) et **SCRUM-197**
-(pages légales, redirections, SEO). Le site reste donc servi à l'identique
-pendant toute la refonte.
+`public/index.html` a disparu avec **SCRUM-196** : l'accueil est désormais
+`src/pages/index.astro`. Les trois pages restantes — `confidentialite.html`,
+`support.html`, `mentions-legales.html` — sont encore servies verbatim depuis
+`public/` et **vouvoient toujours** ; elles sont portées en `.astro`, au
+tutoiement, par **SCRUM-197**, avec les redirections `.html` → sans extension.
 
 ## Sécurité
 

@@ -1,0 +1,96 @@
+---
+/**
+ * FAQ en <details>/<summary> natifs : ouverture, fermeture et accessibilité
+ * clavier sans une ligne de JavaScript. Un accordéon maison coûterait un
+ * script, `aria-expanded` à tenir à jour, et une CSP à desserrer.
+ *
+ * Le contenu de chaque réponse passe par un <slot> nommé, pour pouvoir y mettre
+ * des liens — la question reste du texte simple.
+ */
+interface Props {
+  questions: { q: string; slot: string }[];
+}
+
+const { questions } = Astro.props;
+---
+
+<div class="faq">
+  {
+    questions.map(({ q, slot }) => (
+      <details class="faq__item">
+        <summary>
+          <span>{q}</span>
+          <svg class="faq__chevron" viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+            <path
+              d="M6 9l6 6 6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </summary>
+        <div class="faq__body">
+          <slot name={slot} />
+        </div>
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+  }
+
+  /* Le bois porte et sépare : c'est lui qui tient la carte, jamais la menthe. */
+  .faq__item {
+    border: 1px solid var(--bois-300);
+    border-radius: var(--radius);
+    background: var(--app-card);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-6);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  /* Le triangle par défaut de Safari, qui ignore `list-style: none`. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__chevron {
+    flex: none;
+    color: var(--ink-3);
+    transition: transform 150ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq__chevron {
+      transition: none;
+    }
+  }
+
+  .faq__item[open] .faq__chevron {
+    transform: rotate(180deg);
+  }
+
+  .faq__body {
+    padding: 0 var(--space-6) var(--space-6);
+    color: var(--ink-2);
+  }
+
+  .faq__body :global(p + p) {
+    margin-top: var(--space-3);
+  }
+</style>

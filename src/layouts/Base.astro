@@ -14,9 +14,16 @@ interface Props {
 
 const { title, description, noindex = false } = Astro.props;
 
-/* Astro.site vient de `site` dans astro.config.mjs. L'URL canonique est
-   absolue et sans barre finale, cohérente avec `trailingSlash: 'never'`. */
-const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, '') || Astro.site!.href;
+/* Astro.site vient de `site` dans astro.config.mjs.
+   `build.format: 'file'` fait que `Astro.url.pathname` porte l'extension du
+   fichier écrit : `/index.html`, `/404.html`. Ce n'est PAS l'URL publique —
+   Workers sert ces fichiers à `/` et `/404`. Laisser passer l'extension
+   donnerait une balise canonique en désaccord avec le sitemap, qui liste `/` :
+   deux URLs pour une page, et le moteur choisit à notre place.
+   On retire donc `index.html` puis l'extension, et on garde la barre finale
+   pour la seule racine — là encore, pour coller au sitemap. */
+const chemin = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '');
+const canonical = new URL(chemin, Astro.site).href;
 ---
 
 <!doctype html>

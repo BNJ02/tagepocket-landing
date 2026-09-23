@@ -19,9 +19,21 @@ export type NavLink = {
 /** Barre de navigation principale. */
 export const MAIN_NAV: NavLink[] = [
   { href: '/tarifs', label: 'Tarifs', ready: false }, // SCRUM-209
-  { href: '/telecharger', label: "L'app", ready: false }, // SCRUM-196
+  // Rien à télécharger tant que l'app n'est pas publiée sur les stores : la
+  // landing porte un badge « Bientôt sur iOS & Android » à la place.
+  { href: '/telecharger', label: "L'app", ready: false },
   { href: '/support', label: 'Support', ready: true },
 ];
+
+/**
+ * Cible du bouton « Commencer l'essai ».
+ *
+ * `/tarifs` n'existe pas encore (SCRUM-209) et la même discipline que ci-dessus
+ * s'applique : on ne lie pas vers une page absente. En attendant, le bouton
+ * renvoie à la section tarifs de la page d'accueil, qui porte déjà les deux
+ * formules. Basculer sur `/tarifs` dans le commit qui livre la page.
+ */
+export const TARIFS_TARGET = MAIN_NAV[0].ready ? '/tarifs' : '#tarifs';
 
 /** Appel à l'action de l'en-tête. */
 export const HEADER_CTA: NavLink = {

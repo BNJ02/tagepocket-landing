@@ -1,0 +1,677 @@
+---
+/**
+ * Page d'accueil — SCRUM-196.
+ *
+ * Réécriture intégrale de l'ancien index.html, qui vouvoyait alors que l'app
+ * tutoie partout. Tout le texte ci-dessous tutoie, et reprend le vocabulaire de
+ * la clairière : la bûche qu'on coupe, la rivière qu'on descend, les lieux qui
+ * donnent leur nom aux six sous-épreuves.
+ *
+ * Les captures sont réelles, prises sur l'appareil de test via adb — aucune
+ * maquette inventée.
+ */
+import Base from '../layouts/Base.astro';
+import Phone from '../components/Phone.astro';
+import Faq from '../components/Faq.astro';
+import { TARIFS_TARGET, CONTACT_EMAIL } from '../lib/nav';
+import { FORMULES, ESSAI_JOURS, euros, parMois } from '../lib/offre';
+
+/* Les six sous-épreuves, dans l'ordre du Parcours de l'app
+   (~/memora_tage_mage/src/data/structure.ts). Le lieu est le titre, la
+   sous-épreuve le sous-titre : c'est la convention de l'app, et elle transforme
+   une liste en trajet. */
+const EPREUVES = [
+  { lieu: 'La Source', nom: 'Calcul', quoi: 'Problèmes arithmétiques, pourcentages, proportions.' },
+  { lieu: 'Le Gué', nom: 'Logique', quoi: 'Séries numériques et séries graphiques.' },
+  { lieu: 'Les Rapides', nom: 'Conditions minimales', quoi: 'Le format à cinq réponses, celui qui coûte le plus de points.' },
+  { lieu: 'Le Feu de camp', nom: 'Raisonnement & argumentation', quoi: 'Syllogismes, déductions, failles d’un raisonnement.' },
+  { lieu: 'Le Lac', nom: 'Compréhension de texte', quoi: 'Analyse et inférence sur des textes longs.' },
+  { lieu: 'La Brume', nom: 'Expression', quoi: 'Vocabulaire, synonymes, paronymes, grammaire.' },
+];
+
+const FAQ = [
+  { q: 'Pourquoi l’abonnement se prend-il sur le site et pas dans l’app ?', slot: 'q1' },
+  { q: 'Comment j’arrête mon abonnement ?', slot: 'q2' },
+  { q: 'Je suis prélevé pendant l’essai ?', slot: 'q3' },
+  { q: 'C’est disponible sur iPhone et sur Android ?', slot: 'q4' },
+  { q: 'Qu’est-ce que je garde si j’arrête de payer ?', slot: 'q5' },
+];
+
+const mensuel = FORMULES[0];
+---
+
+<Base
+  title="TagePocket — le TAGE MAGE, un peu chaque jour"
+  description="Prépare le TAGE MAGE en séances courtes : les six sous-épreuves au format réel, la méthode détaillée après chaque question, et un score estimé sur 600 qui s'affine à chaque série."
+>
+  <!-- ————————————————— 1. Héros ————————————————— -->
+  <section class="hero">
+    <div class="page hero__in">
+      <div class="hero__txt">
+        <p class="badge">Bientôt sur iOS &amp; Android</p>
+        <h1>Le TAGE MAGE, un peu chaque jour.</h1>
+        <p class="lead">
+          Quinze questions, vingt minutes, le format exact de l’épreuve. Tu
+          réponds, tu vois la méthode — pas seulement la bonne lettre — et ce que
+          tu rates revient tant que ce n’est pas acquis.
+        </p>
+        <p class="hero__cta">
+          <a class="btn btn--accent" href={TARIFS_TARGET}>
+            Commencer l’essai gratuit
+          </a>
+          <a class="btn btn--neutre" href="#systeme">Voir comment ça marche</a>
+        </p>
+        <p class="hero__note">
+          <span class="num">{ESSAI_JOURS}</span> jours d’essai · sans engagement · résiliable en trois clics
+        </p>
+      </div>
+
+      <div class="hero__shot">
+        <Phone
+          src="/screens/question.webp"
+          alt="Une question de Calcul dans l'app : l'énoncé, cinq propositions de A à E, et le chronomètre de la série."
+          width={264}
+          loading="eager"
+        />
+        <img class="hero__gaston" src="/brand/gaston-content.svg" alt="" width="132" height="132" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ————————————————— 2. Les six sous-épreuves ————————————————— -->
+  <section class="sec page">
+    <h2>Les six sous-épreuves, au format réel</h2>
+    <p class="sec__lead">
+      Le TAGE MAGE, ce sont six sous-épreuves de quinze questions en vingt
+      minutes, notées <span class="num">+4</span> / <span class="num">−1</span> /
+      <span class="num">0</span>. Chacune porte le nom d’un lieu : tu descends la
+      rivière, de la source au lac.
+    </p>
+
+    <ul class="lieux">
+      {
+        EPREUVES.map(({ lieu, nom, quoi }, i) => (
+          <li class="lieu">
+            <span class="lieu__n num">{i + 1}</span>
+            <div>
+              <h3>{lieu}</h3>
+              <p class="lieu__nom">{nom}</p>
+              <p class="lieu__quoi">{quoi}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- ————————————————— 3. Le système ————————————————— -->
+  <section class="sec sec--sombre" id="systeme">
+    <div class="page">
+      <h2>La méthode, pas seulement la réponse</h2>
+      <p class="sec__lead">
+        Savoir qu’on s’est trompé ne fait pas progresser. Après chaque question,
+        tu as le raisonnement étape par étape — <em>et</em> pourquoi chacune des
+        quatre autres propositions tombe. C’est là que se gagnent les points.
+      </p>
+
+      <div class="duo">
+        <Phone
+          src="/screens/correction.webp"
+          alt="L'écran de correction : la bonne réponse, puis le raisonnement en sept étapes numérotées, dont une par proposition écartée."
+          width={272}
+        />
+        <Phone
+          src="/screens/revisions.webp"
+          alt="L'écran des révisions du jour : le nombre de cartes à revoir et la liste des lieux, le plus faible en tête."
+          width={272}
+        />
+      </div>
+
+      <ul class="points">
+        <li>
+          <h3>Des séries de quinze, pas des questions en vrac</h3>
+          <p>
+            Une série, c’est un pod : quinze questions d’un seul lieu, chronomètre
+            de vingt minutes, exactement comme le jour J. Tu le valides à partir
+            de <span class="num">12</span> sur <span class="num">15</span>, deux
+            fois d’affilée.
+          </p>
+        </li>
+        <li>
+          <h3>Ce que tu rates revient</h3>
+          <p>
+            Les questions manquées reviennent en révision, espacées dans le temps,
+            et les lieux où tu es le plus faible remontent en tête de liste. Tu ne
+            choisis pas quoi réviser : l’app te le dit.
+          </p>
+        </li>
+        <li>
+          <h3>Le calcul mental se travaille à part</h3>
+          <p>
+            Tables, puissances, pourcentages, critères de divisibilité : des
+            sprints d’une minute pour installer le réflexe. Vingt minutes pour
+            quinze questions, le temps se perd dans l’exécution, pas dans le
+            raisonnement.
+          </p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ————————————————— 4. Progression ————————————————— -->
+  <section class="sec page">
+    <div class="duo duo--texte">
+      <div>
+        <h2>Un score sur 600 qui s’affine</h2>
+        <p>
+          À partir de tes réponses, l’app estime ta note sur
+          <span class="num">600</span> et la compare à l’objectif que tu t’es
+          fixé. Pas une note de complaisance : elle bouge quand ta précision
+          bouge, et elle descend aussi.
+        </p>
+        <p>
+          À côté, de quoi tenir le rythme sur plusieurs mois — un objectif
+          quotidien, une série de jours à ne pas casser, et un classement
+          hebdomadaire entre candidats.
+        </p>
+        <ul class="tirets">
+          <li>Quatre paliers par lieu, du Débutant à l’Expert</li>
+          <li>Ta date d’examen en compte à rebours</li>
+          <li>Précision, temps par question et progression par lieu</li>
+        </ul>
+      </div>
+      <Phone
+        src="/screens/parcours.webp"
+        alt="Le Parcours : l'objectif du jour, le monde « La Source » et le chemin de pierres qui relie les étapes."
+        width={264}
+      />
+    </div>
+  </section>
+
+  <!-- ————————————————— 5. Tarifs résumés ————————————————— -->
+  <section class="sec sec--tarifs" id="tarifs">
+    <div class="page">
+      <h2>Deux formules, tout est compris</h2>
+      <p class="sec__lead">
+        Les <span class="num">{ESSAI_JOURS}</span> premiers jours sont gratuits et
+        ne sont pas prélevés. Tu décides ensuite, ou tu arrêtes — rien ne se
+        reconduit dans ton dos.
+      </p>
+
+      <ul class="formules">
+        {
+          FORMULES.map((f) => (
+            <li class={`formule${f.avantage ? ' formule--phare' : ''}`}>
+              {f.avantage && <p class="formule__ruban">{f.avantage}</p>}
+              <h3>{f.nom}</h3>
+              <p class="formule__prix">
+                <span class="num">{euros(f.prix)}</span>
+                <span class="formule__periode">{f.periode}</span>
+              </p>
+              {f.mois > 1 && (
+                <p class="formule__mensualise">
+                  soit <span class="num">{euros(parMois(f))}</span> par mois
+                </p>
+              )}
+              <p class="formule__tva">TTC, TVA comprise</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="formules__note">
+        Tout le contenu est inclus dans les deux formules : il n’y a pas d’option
+        à rajouter. L’abonnement se prend ici, sur le site, et se résilie en trois
+        clics depuis ton compte.
+      </p>
+      <p class="formules__bientot">
+        Le paiement ouvre bientôt. En attendant, écris-nous à
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> pour être prévenu.
+      </p>
+    </div>
+  </section>
+
+  <!-- ————————————————— 6. FAQ ————————————————— -->
+  <section class="sec page">
+    <h2>Les questions qu’on nous pose</h2>
+
+    <Faq questions={FAQ}>
+      <Fragment slot="q1">
+        <p>
+          Parce que passer par les boutiques d’applications coûte entre
+          <span class="num">15</span> et <span class="num">30</span> % du prix, et
+          que cette part serait dans ton abonnement. En payant sur le site, tu
+          paies le service, pas la commission.
+        </p>
+        <p>
+          Ton compte est le même des deux côtés : tu t’abonnes ici, tu te
+          connectes dans l’app, et tout est débloqué.
+        </p>
+      </Fragment>
+
+      <Fragment slot="q2">
+        <p>
+          Depuis ton compte : « Gérer mon abonnement », « Annuler », confirmer.
+          Trois clics, sans e-mail à envoyer et sans avoir à se justifier. Tu
+          gardes l’accès jusqu’à la fin de la période déjà payée.
+        </p>
+      </Fragment>
+
+      <Fragment slot="q3">
+        <p>
+          Non. Ta carte est enregistrée à l’inscription, mais rien n’est débité
+          pendant les <span class="num">{ESSAI_JOURS}</span> jours. Si tu annules
+          avant la fin, tu n’auras rien payé.
+        </p>
+      </Fragment>
+
+      <Fragment slot="q4">
+        <p>
+          Pas encore : l’app arrive sur iOS et sur Android, et le même abonnement
+          vaudra pour les deux — tu ne paies pas deux fois si tu changes de
+          téléphone.
+        </p>
+      </Fragment>
+
+      <Fragment slot="q5">
+        <p>
+          Ton compte, ta progression et ton historique restent. Tu repasses sur la
+          partie gratuite, et tout revient si tu te réabonnes plus tard — tu ne
+          recommences pas à zéro.
+        </p>
+      </Fragment>
+    </Faq>
+  </section>
+
+  <!-- ————————————————— 7. Dernier appel ————————————————— -->
+  <section class="final">
+    <div class="page final__in">
+      <img src="/brand/gaston-fier.svg" alt="" width="104" height="104" />
+      <h2>Le jour J se prépare les autres jours</h2>
+      <p>
+        Vingt minutes par jour valent mieux qu’un week-end de bachotage la veille.
+        Commence par une série, tu verras où tu en es.
+      </p>
+      <p>
+        <a class="btn btn--accent" href={TARIFS_TARGET}>Commencer l’essai gratuit</a>
+      </p>
+      <p class="final__note">
+        <span class="num">{euros(mensuel.prix)}</span> par mois après l’essai ·
+        sans engagement
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ——— Briques communes ——— */
+
+  .sec {
+    padding-block: var(--space-24);
+  }
+
+  .sec__lead {
+    margin-top: var(--space-4);
+    font-size: var(--text-lg);
+    color: var(--ink-2);
+  }
+
+  .btn {
+    display: inline-block;
+    padding: var(--space-3) var(--space-8);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* Menthe = agir. Le texte est en --accent-ink : la menthe 500 est une
+     surface à 2,2:1, illisible en blanc. */
+  .btn--accent {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 4px 0 var(--accent-press);
+  }
+
+  .btn--accent:hover {
+    background: var(--accent-press);
+    color: var(--brand-ink);
+  }
+
+  /* Bois = porte. Un bouton neutre ne réclame rien. */
+  .btn--neutre {
+    background: var(--bois-100);
+    color: var(--bois-900);
+    box-shadow: 0 4px 0 var(--bois-300);
+  }
+
+  .btn--neutre:hover {
+    background: var(--bois-200);
+  }
+
+  /* ——— 1. Héros ——— */
+
+  .hero {
+    padding-block: var(--space-16) var(--space-24);
+  }
+
+  .hero__in {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-16);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    margin-top: var(--space-4);
+  }
+
+  .lead {
+    margin-top: var(--space-6);
+    font-size: var(--text-lg);
+    color: var(--ink-2);
+  }
+
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    max-width: none;
+    margin-top: var(--space-8);
+  }
+
+  .hero__note {
+    margin-top: var(--space-4);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+  }
+
+  .hero__shot {
+    position: relative;
+  }
+
+  /* Gaston déborde du cadre : il accompagne l'écran, il ne le décore pas. */
+  .hero__gaston {
+    position: absolute;
+    left: -56px;
+    bottom: -24px;
+  }
+
+  /* ——— 2. Les lieux ——— */
+
+  .lieux {
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-12);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: var(--space-6);
+  }
+
+  .lieu {
+    display: flex;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border-radius: var(--radius);
+    background: var(--app-card);
+    /* La tranche de bois sous la carte : elle porte, elle ne signale rien. */
+    box-shadow: 0 3px 0 var(--bois-300);
+  }
+
+  .lieu__n {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: var(--text-sm);
+  }
+
+  .lieu__nom {
+    margin-top: var(--space-1);
+    color: var(--accent-strong);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .lieu__quoi {
+    margin-top: var(--space-2);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  /* ——— 3. Le système ——— */
+
+  .sec--sombre {
+    background: var(--brand);
+    color: var(--brand-ink);
+  }
+
+  .sec--sombre .sec__lead,
+  .sec--sombre .points p {
+    /* Le --ink-2 de la mousse est illisible sur le vert profond. */
+    color: color-mix(in srgb, var(--brand-ink) 82%, transparent);
+  }
+
+  .duo {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-8);
+    margin-top: var(--space-12);
+  }
+
+  .points {
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-16);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-8);
+  }
+
+  .points p {
+    margin-top: var(--space-3);
+  }
+
+  /* ——— 4. Progression ——— */
+
+  .duo--texte {
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-16);
+    margin-top: 0;
+    text-align: left;
+  }
+
+  .duo--texte > div {
+    flex: 1 1 22rem;
+  }
+
+  .duo--texte p + p {
+    margin-top: var(--space-4);
+  }
+
+  .duo--texte h2 + p {
+    margin-top: var(--space-6);
+  }
+
+  .tirets {
+    margin-top: var(--space-6);
+    padding-left: var(--space-6);
+    color: var(--ink-2);
+  }
+
+  .tirets li + li {
+    margin-top: var(--space-2);
+  }
+
+  /* ——— 5. Tarifs ——— */
+
+  .sec--tarifs {
+    padding-block: var(--space-24);
+    background: var(--bois-100);
+  }
+
+  .formules {
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-12);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-6);
+    max-width: 44rem;
+  }
+
+  .formule {
+    position: relative;
+    padding: var(--space-8);
+    border: 1px solid var(--bois-300);
+    border-radius: var(--radius-lg);
+    background: var(--app-card);
+  }
+
+  .formule--phare {
+    border-color: var(--accent);
+  }
+
+  .formule__ruban {
+    position: absolute;
+    top: calc(-1 * var(--space-3));
+    left: var(--space-6);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--gold);
+    color: var(--accent-ink);
+    font-size: var(--text-xs);
+    font-weight: 600;
+  }
+
+  .formule__prix {
+    margin-top: var(--space-4);
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .formule__prix .num {
+    font-size: var(--text-2xl);
+    color: var(--accent-strong);
+  }
+
+  .formule__periode {
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  .formule__mensualise {
+    margin-top: var(--space-1);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  .formule__tva {
+    margin-top: var(--space-4);
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+  }
+
+  .formules__note {
+    margin-top: var(--space-8);
+    color: var(--ink-2);
+  }
+
+  .formules__bientot {
+    margin-top: var(--space-3);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  /* ——— 7. Dernier appel ——— */
+
+  .final {
+    padding-block: var(--space-24);
+    background: var(--brand);
+    color: var(--brand-ink);
+  }
+
+  .final__in {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .final h2 {
+    margin-top: var(--space-6);
+  }
+
+  .final p {
+    margin-top: var(--space-6);
+    color: color-mix(in srgb, var(--brand-ink) 82%, transparent);
+  }
+
+  .final__note {
+    margin-top: var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  /* ——— Adaptations ——— */
+
+  @media (max-width: 56rem) {
+    .hero__in {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-12);
+      justify-items: center;
+      text-align: center;
+    }
+
+    .hero__txt :global(p) {
+      margin-inline: auto;
+    }
+
+    .hero__cta {
+      justify-content: center;
+    }
+
+    .duo--texte {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .duo--texte :global(p),
+    .duo--texte :global(.tirets) {
+      margin-inline: auto;
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 36rem) {
+    .sec,
+    .sec--tarifs,
+    .final {
+      padding-block: var(--space-16);
+    }
+
+    .hero__gaston {
+      left: -28px;
+      width: 88px;
+      height: 88px;
+    }
+  }
+</style>
