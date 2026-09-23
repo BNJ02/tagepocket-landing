@@ -142,6 +142,13 @@ Attention au piège du formulaire *Connect to tagepocket.fr* : laisser le champ
 | Version de Node | lue dans `.nvmrc` (`22`) |
 
 `npm run deploy` fait la même chose depuis le poste local.
+
+Le projet **Pages** n'est pas supprimé : il garde son dernier artefact connu bon
+et sert de retour arrière. Ses déploiements automatiques sont **coupés**
+(`deployments_enabled: false`, previews `none`), sinon chaque push déclencherait
+deux constructions. Retour arrière : retirer le custom domain du Worker, puis
+réattacher `www.tagepocket.fr` au projet Pages — deux minutes. À supprimer une
+fois le Worker éprouvé.
 ## Arborescence
 
 | Chemin | Rôle |
