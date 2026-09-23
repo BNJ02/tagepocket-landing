@@ -43,12 +43,12 @@
   // eux, se contentent d'un CNAME depuis n'importe quel hébergeur DNS — c'est
   // cette asymétrie qui a mis le site hors ligne le 22/09/2026.
   //
-  // `routes` reste commenté tant que la bascule n'est pas décidée : www est
-  // aujourd'hui servi par le projet Pages, et créer le custom domain du Worker
-  // écrase l'enregistrement DNS correspondant. Pour basculer : décommenter,
-  // passer `workers_dev` à false, `npm run deploy`, vérifier, puis supprimer le
-  // projet Pages.
-  //
-  // "routes": [{ "pattern": "www.tagepocket.fr", "custom_domain": true }],
-  "workers_dev": true
+  // Bascule effectuée le 23/09/2026 : ce custom domain remplace le
+  // `CNAME www -> tagepocket-landing.pages.dev` que servait le projet Pages.
+  // Point de retour en cas de problème : recréer ce CNAME, proxié.
+  "routes": [{ "pattern": "www.tagepocket.fr", "custom_domain": true }],
+
+  // Plus de sous-domaine workers.dev : une seule origine publique, donc pas de
+  // contenu dupliqué pour les moteurs de recherche.
+  "workers_dev": false
 }
