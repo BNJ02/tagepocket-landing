@@ -346,6 +346,25 @@ Seules des variables `PUBLIC_*` ont le droit d'entrer dans le bundle
 `service_role` ici** : toute la logique de paiement vit dans les Edge Functions
 Supabase de `~/memora_tage_mage/supabase/functions/`.
 
+### Où vit la facturation
+
+Rien de tout cela n'est dans ce dépôt, et ce n'est pas un oubli : le site ne
+fait que **lire** un booléen. Les sources sont dans `~/memora_tage_mage` et ne
+sont pas dupliquées ici.
+
+| Fichier (dépôt de l'app) | Rôle |
+|---|---|
+| `supabase/schema-billing.sql` | tables `subscriptions`, `billing_customers`, `stripe_events`, RLS, `is_premium()` |
+| `supabase/schema-billing-rollback.sql` | retour arrière de la migration |
+| `supabase/verify-billing-rls.sh` | tests négatifs de la RLS, avec de vrais jetons |
+| `supabase/functions/` | Edge Functions Stripe (lot 4) |
+
+Ce que le site appelle : `POST /rest/v1/rpc/is_premium` avec le JWT de
+l'utilisateur. La fonction ne renvoie qu'un booléen, et seulement sur le compte
+appelant. La variante `is_premium(uuid)` existe mais n'est accordée qu'au
+`service_role` : accordée au client, elle laisserait sonder l'abonnement d'un
+tiers à partir d'un simple identifiant.
+
 ### En-têtes — `public/_headers`
 
 HSTS, `nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` et
