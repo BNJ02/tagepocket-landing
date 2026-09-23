@@ -1,0 +1,266 @@
+---
+/**
+ * /compte/supprimer — suppression du compte depuis le site (SCRUM-204).
+ *
+ * Même Edge Function que l'app (`delete-account`) : réauthentification par mot
+ * de passe côté serveur, puis purge. Supprimer ici supprime aussi le compte de
+ * l'app — c'est le même compte.
+ *
+ * GARDE-FOU TANT QUE SCRUM-210 N'EST PAS FAIT : la fonction ne sait pas encore
+ * annuler l'abonnement Stripe. Supprimer un compte abonné laisserait Stripe
+ * prélever un compte qui n'existe plus. La page refuse donc la suppression tant
+ * qu'un abonnement vivant n'est pas résilié. Retirer ce blocage dans le commit
+ * de SCRUM-210, pas avant.
+ */
+import Account from '../../layouts/Account.astro';
+import { CONTACT_EMAIL } from '../../lib/nav';
+---
+
+<Account
+  title="Supprimer mon compte · TagePocket"
+  description="Suppression définitive de ton compte TagePocket."
+>
+  <p class="retour"><a href="/compte">← Mon compte</a></p>
+  <h1>Supprimer mon compte</h1>
+  <p class="compte__email" data-email></p>
+
+  <section class="carte" data-avertissement aria-labelledby="efface-titre">
+    <h2 id="efface-titre">Ce qui sera effacé, définitivement</h2>
+    <ul class="liste">
+      <li>ton compte et ton adresse e-mail, sur le site comme dans l'app ;</li>
+      <li>ta progression, tes statistiques et ton historique de réponses ;</li>
+      <li>ton pseudo et ta place dans les classements.</li>
+    </ul>
+    <p>
+      Rien ne pourra être récupéré, pas même par nous. Si tu reviens un jour, tu
+      repartiras de zéro.
+    </p>
+    <h2 class="sous-titre">Ce qui est conservé</h2>
+    <p>
+      Si tu as payé un abonnement, tes factures restent archivées chez notre
+      prestataire de paiement pendant 10 ans : c'est une obligation comptable
+      (art. L123-22 du Code de commerce). Elles ne sont plus rattachées à aucun
+      compte TagePocket.
+    </p>
+  </section>
+
+  <section class="carte carte--bloque" data-bloque hidden aria-labelledby="bloque-titre">
+    <h2 id="bloque-titre">Résilie d'abord ton abonnement</h2>
+    <p>
+      Ton abonnement est encore en cours. Résilie-le avant de supprimer ton compte,
+      sinon les prélèvements continueraient. Besoin d'aide :
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+    </p>
+  </section>
+
+  <form class="carte" data-form novalidate>
+    <h2>Confirme avec ton mot de passe</h2>
+    <label class="champ">
+      Mot de passe
+      <input name="password" type="password" autocomplete="current-password" required />
+    </label>
+    <label class="coche">
+      <input name="compris" type="checkbox" required />
+      Je comprends que la suppression est définitive.
+    </label>
+    <p class="alerte" data-alerte role="alert"></p>
+    <button type="submit" class="bouton-danger">Supprimer définitivement mon compte</button>
+    <p class="oubli">
+      Mot de passe oublié ?
+      <a href="/connexion?vue=reinit">Choisis-en un nouveau</a>, puis reviens ici.
+    </p>
+  </form>
+
+  <section class="carte" data-fait hidden aria-labelledby="fait-titre">
+    <img src="/brand/gaston-endormi.svg" alt="" width="72" height="72" />
+    <h2 id="fait-titre">Ton compte est supprimé</h2>
+    <p>
+      Tout a été effacé. Si l'app est ouverte sur ton téléphone, elle te
+      déconnectera d'elle-même. Merci d'être passé par la clairière.
+    </p>
+    <p><a href="/">Retour à l'accueil</a></p>
+  </section>
+</Account>
+
+<style>
+  .retour {
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  .liste {
+    margin-top: var(--space-3);
+    padding-left: var(--space-6);
+    color: var(--ink-2);
+  }
+
+  .sous-titre {
+    margin-top: var(--space-6);
+  }
+
+  .carte--bloque {
+    border-color: var(--bad);
+    box-shadow: 0 4px 0 var(--bad-soft);
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .champ {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .champ input {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+    background: var(--app-bg);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+  }
+
+  .coche {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    font-size: var(--text-sm);
+  }
+
+  .coche input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.15rem;
+    accent-color: var(--bad-ink);
+  }
+
+  .alerte {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--bad-ink);
+    background: var(--bad-soft);
+    border-radius: var(--radius-sm);
+  }
+
+  .alerte:empty {
+    display: none;
+  }
+
+  /* Détruire n'est pas agir au sens de la menthe : le seul bouton rouge du site.
+     Fond --bad-ink et texte blanc, 8:1 ; le --bad pur n'atteint pas 4,5:1. */
+  .bouton-danger {
+    padding: var(--space-3) var(--space-6);
+    font: inherit;
+    font-weight: 600;
+    color: #fff;
+    background: var(--bad-ink);
+    border: 0;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+  }
+
+  .bouton-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .oubli {
+    font-size: var(--text-sm);
+  }
+</style>
+
+<script>
+  import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js';
+  import { supabase } from '../../lib/supabase';
+  import { devoiler, requireSession, sessionPerimee } from '../../lib/guard';
+  import { etatAbonnement, type LigneAbonnement } from '../../lib/abonnement';
+
+  const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+  const form = $<HTMLFormElement>('[data-form]');
+  const bouton = $<HTMLButtonElement>('button[type="submit"]');
+  const alerte = $('[data-alerte]');
+
+  /** Un abonnement qui prélève encore, ou prélèvera. */
+  async function abonnementEnCours(): Promise<boolean | 'perimee'> {
+    const { data, error, status } = await supabase
+      .from('subscriptions')
+      .select('status, plan, current_period_end, cancel_at_period_end, trial_end, canceled_at, created_at');
+    if (status === 401) return 'perimee';
+    // En cas de doute, on bloque : mieux vaut un « réessaie » qu'un prélèvement
+    // sur un compte supprimé.
+    if (error) return true;
+    const e = etatAbonnement((data ?? []) as LigneAbonnement[]);
+    return e.type === 'impaye' || ((e.type === 'essai' || e.type === 'actif') && !e.resilie);
+  }
+
+  async function supprimer(password: string): Promise<void> {
+    const { error } = await supabase.functions.invoke('delete-account', { body: { password } });
+    if (!error) return;
+
+    if (error instanceof FunctionsHttpError) {
+      const reponse = error.context as Response;
+      const corps = (await reponse.json().catch(() => ({}))) as { error?: string };
+      if (reponse.status === 401 && corps.error === 'invalid_password') {
+        throw new Error('Mot de passe incorrect.');
+      }
+      // Jeton refusé par la fonction : la session n'est plus valable.
+      if (reponse.status === 401) {
+        await sessionPerimee();
+        throw new Error('Ta session a expiré. Reconnecte-toi.');
+      }
+      throw new Error("La suppression n'a pas abouti. Réessaie, ou écris-nous.");
+    }
+    if (error instanceof FunctionsFetchError) throw new Error('Pas de connexion. Vérifie ton réseau.');
+    throw new Error('Une erreur est survenue. Réessaie.');
+  }
+
+  async function main() {
+    const session = await requireSession();
+    if (!session) return;
+    $('[data-email]').textContent = session.user.email ?? '';
+
+    const bloque = await abonnementEnCours();
+    if (bloque === 'perimee') return sessionPerimee();
+    if (bloque) {
+      $('[data-bloque]').hidden = false;
+      form.hidden = true;
+    }
+    devoiler();
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alerte.textContent = '';
+    const donnees = new FormData(form);
+    const password = String(donnees.get('password') ?? '');
+    if (!donnees.get('compris')) {
+      alerte.textContent = 'Coche la case pour confirmer que tu as bien compris.';
+      return;
+    }
+    if (!password) {
+      alerte.textContent = 'Entre ton mot de passe.';
+      return;
+    }
+
+    bouton.disabled = true;
+    try {
+      await supprimer(password);
+      // Le compte n'existe plus : la session locale ne vaut plus rien.
+      await supabase.auth.signOut({ scope: 'local' });
+      form.hidden = true;
+      $('[data-avertissement]').hidden = true;
+      $('[data-fait]').hidden = false;
+      $('[data-email]').textContent = '';
+    } catch (err) {
+      alerte.textContent = err instanceof Error ? err.message : 'Une erreur est survenue.';
+      bouton.disabled = false;
+    }
+  });
+
+  main();
+</script>
