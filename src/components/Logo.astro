@@ -13,16 +13,29 @@
  * qui rend la marque lisible sur un fond clair.
  */
 interface Props {
-  /** Hauteur de la pastille, en pixels. Le mot-symbole suit. */
-  size?: number;
+  /**
+   * Hauteur de la pastille, en pixels. Le mot-symbole suit.
+   *
+   * Valeurs FERMÉES, et c'est délibéré. La taille du mot se calculait avant
+   * dans un `style="--mark-size: 30px"` posé sur l'élément : un attribut de
+   * style en ligne, que `style-src 'self'` bloque (SCRUM-198). Un attribut de
+   * style relève de `style-src-attr`, qui retombe sur `style-src` faute de
+   * mieux, donc l'autoriser reviendrait à rouvrir `'unsafe-inline'` pour un
+   * chiffre décoratif.
+   *
+   * La conséquence est qu'une nouvelle taille s'ajoute ici ET dans la feuille
+   * de style ci-dessous. C'est le prix, et il est faible : le composant a deux
+   * appelants.
+   */
+  size?: 26 | 30 | 40;
   /** Masquer le mot-symbole — pour les contextes très étroits. */
   markOnly?: boolean;
 }
 
-const { size = 32, markOnly = false } = Astro.props;
+const { size = 30, markOnly = false } = Astro.props;
 ---
 
-<span class="logo" style={`--mark-size: ${size}px`}>
+<span class:list={['logo', `logo--${size}`]}>
   <svg
     class="logo__mark"
     viewBox="0 0 512 512"
@@ -59,8 +72,21 @@ const { size = 32, markOnly = false } = Astro.props;
 
   .logo__word {
     font-weight: 800;
-    font-size: calc(var(--mark-size) * 0.62);
     letter-spacing: -0.03em;
     color: var(--ink);
+  }
+
+  /* 0,62 fois la hauteur de la pastille : le mot arrive à peu près à la
+     hauteur des incisives, et l'ensemble se lit comme un seul bloc. */
+  .logo--26 .logo__word {
+    font-size: 16px;
+  }
+
+  .logo--30 .logo__word {
+    font-size: 19px;
+  }
+
+  .logo--40 .logo__word {
+    font-size: 25px;
   }
 </style>

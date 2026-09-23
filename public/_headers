@@ -1,0 +1,99 @@
+# En-têtes servis par Workers Static Assets (SCRUM-198).
+#
+# Un bloc = un motif d'URL, puis les en-têtes indentés. Les règles de TOUS les
+# blocs qui correspondent s'appliquent, et un en-tête défini deux fois voit ses
+# valeurs jointes par une virgule : c'est pourquoi `Cache-Control` n'apparaît
+# jamais dans le bloc `/*`, sinon les assets hériteraient de deux valeurs
+# contradictoires.
+#
+# Lu par Cloudflare au déploiement, jamais servi comme fichier : `.assetsignore`
+# l'exclut des assets publics. Les redirections de `_redirects` sont appliquées
+# AVANT les en-têtes, donc une URL redirigée ne reçoit pas ces en-têtes, elle
+# reçoit un 301.
+
+/*
+  # Le navigateur refuse le HTTP en clair sur ce domaine pendant un an, et se
+  # souvient de ce refus. Le jeton `preload` ne fait rien par lui-même : il
+  # déclare seulement que le site est CANDIDAT à la liste de préchargement des
+  # navigateurs. L'inscription se fait à part, sur hstspreload.org, elle n'a pas
+  # été faite, et elle ne doit pas l'être à la légère : en sortir prend des mois
+  # et le domaine reste inaccessible en HTTP entre-temps.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Le navigateur s'en tient au Content-Type déclaré. Sans cela il devine, et
+  # un fichier téléversé un jour par un utilisateur pourrait être deviné
+  # « text/html » puis exécuté sur notre origine.
+  X-Content-Type-Options: nosniff
+
+  # L'origine part en Referer vers l'extérieur, jamais le chemin complet. Sans
+  # cela, un clic depuis /compte enverrait l'URL de la page de compte au site
+  # visité.
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Doublon volontaire de `frame-ancestors 'none'` : X-Frame-Options couvre les
+  # navigateurs qui ignorent encore cette directive CSP.
+  X-Frame-Options: DENY
+
+  # Aucune de ces API n'est utilisée. `payment=()` est sans risque : le paiement
+  # se fait sur checkout.stripe.com, donc sur LEUR origine, où notre politique
+  # ne s'applique pas.
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), interest-cohort=()
+
+  # ——— CSP ———
+  #
+  # Pas de `'unsafe-inline'`, ni pour les scripts ni pour les styles. Trois
+  # réglages du projet existent uniquement pour rendre cette ligne tenable :
+  # `build.inlineStylesheets: 'never'`, `vite.build.assetsInlineLimit: 0`, et
+  # l'absence de tout attribut `style=` dans le HTML produit (voir les
+  # commentaires de Logo.astro et Phone.astro, dont c'est la raison d'être).
+  #
+  # L'empreinte sha256 autorise le SEUL script en ligne du site : le JSON-LD de
+  # l'accueil, que Google ne sait pas lire autrement. Elle change au moindre
+  # octet modifié dans ce bloc. `node scripts/csp-hashes.mjs` la recalcule sur
+  # le dist/ construit. Si elle n'est pas mise à jour, la donnée structurée
+  # disparaît SANS RIEN CASSER à l'écran : c'est la panne silencieuse à
+  # surveiller ici.
+  #
+  # `connect-src` n'ouvre que le projet Supabase, pour les lots 2 et 4.
+  # `form-action` n'ouvre que Stripe : le reste du paiement se passe chez eux.
+  # Pas de js.stripe.com, parce qu'on utilise la Checkout Session hébergée.
+  # C'est aussi ce qui justifie l'absence de bandeau cookies : aucun script
+  # tiers ne s'exécute sur tagepocket.fr.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-HQ3W+YWilfPj0LjB9uTJqKtASzQKiviCuShcEujpdbg='; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://lhxgxjkowkaobhuzxctv.supabase.co; form-action 'self' https://checkout.stripe.com https://billing.stripe.com; frame-src 'none'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'
+
+# ——— Cache ———
+#
+# Par défaut, Workers sert TOUT en `public, max-age=0, must-revalidate` : le
+# navigateur revalide à chaque visite. C'est le bon réglage pour une page HTML,
+# qui change sans changer de nom, et un gâchis pour un fichier dont le nom
+# change à chaque modification. Les pages gardent donc le défaut, et ne sont
+# pas listées ici.
+
+# Astro met une empreinte du contenu dans le nom : `Base.D4_Li_I-.css`. Une
+# modification produit un AUTRE nom, jamais un autre contenu sous le même nom.
+# `immutable` dit au navigateur de ne même pas revalider, y compris quand on
+# recharge la page.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Les polices n'ont pas d'empreinte dans leur nom, mais leur nom porte la
+# graisse et le sous-ensemble : `hanken-grotesk-latin-400-normal.woff2`.
+# DISCIPLINE : ne jamais remplacer le contenu d'un de ces fichiers sans changer
+# son nom, sous peine de le laisser figé un an dans les navigateurs.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Régénérables, et sans empreinte dans le nom : une semaine borne le temps
+# qu'une correction met à se propager.
+/screens/*
+  Cache-Control: public, max-age=604800
+/brand/*
+  Cache-Control: public, max-age=604800
+
+# `logo.png` est chargé en URL absolue par les six templates d'e-mail Supabase,
+# et `og.png` par les robots des réseaux sociaux. Une journée, pour qu'une
+# correction parte vite.
+/logo.png
+  Cache-Control: public, max-age=86400
+/og.png
+  Cache-Control: public, max-age=86400

@@ -8,8 +8,4 @@ Allow: /
 # de propreté d'index : la confidentialité tient entièrement à la RLS Supabase.
 Disallow: /compte
 
-# Page de contrôle du design system, temporaire (SCRUM-195), supprimée à la fin
-# du lot 1. Elle porte déjà un `noindex`.
-Disallow: /design
-
 Sitemap: https://www.tagepocket.fr/sitemap-index.xml

@@ -321,7 +321,7 @@ the incoming request » : elles priment donc sur le 307 automatique, bien que
 
 | Chemin | Rôle |
 |---|---|
-| `src/pages/` | routes (`index`, `support`, `confidentialite`, `mentions-legales`, `404`, `design` temporaire) |
+| `src/pages/` | routes (`index`, `support`, `confidentialite`, `mentions-legales`, `404`) |
 | `src/layouts/` | `Base.astro` (head, polices, en-tête, pied de page) et `Legal.astro` (pages de texte long) |
 | `src/components/` | `Logo`, `Header`, `Footer`, `Phone`, `Faq` |
 | `src/styles/` | design system « La Clairière » |
@@ -329,7 +329,7 @@ the incoming request » : elles priment donc sur le 307 automatique, bien que
 | `public/fonts/` | Hanken Grotesk et JetBrains Mono, `.woff2` latin |
 | `public/brand/` | favicon, icônes, les quatre Gaston |
 | `public/screens/` | captures réelles de l'app, rognées et converties en WebP |
-| `public/` | servi verbatim : `robots.txt`, `_redirects`, `og.png`, `favicon.svg`, `logo.png` |
+| `public/` | servi verbatim : `robots.txt`, `_redirects`, `_headers`, `og.png`, `favicon.svg`, `logo.png` |
 | `scripts/` | `gen-og.py` (vignette de partage), `csp-hashes.mjs` (empreintes pour la CSP) |
 | `public/.well-known/` | universal links (AASA + assetlinks) — SCRUM-217 |
 | `public/.assetsignore` | fichiers de `dist/` à ne pas publier |
@@ -346,11 +346,58 @@ Seules des variables `PUBLIC_*` ont le droit d'entrer dans le bundle
 `service_role` ici** : toute la logique de paiement vit dans les Edge Functions
 Supabase de `~/memora_tage_mage/supabase/functions/`.
 
+### En-têtes — `public/_headers`
+
+HSTS, `nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy` et
+une CSP **sans `'unsafe-inline'`**, ni pour les scripts ni pour les styles.
+
+Trois réglages du projet n'existent que pour rendre cette CSP tenable, et les
+défaire la casse :
+
+| Réglage | Sans lui |
+|---|---|
+| `build.inlineStylesheets: 'never'` | Astro écrit un `<style>` dans le HTML |
+| `vite.build.assetsInlineLimit: 0` | Astro écrit un `<script type="module">` dans le HTML |
+| Aucun attribut `style=` dans le HTML | bloqué par `style-src`, via `style-src-attr` |
+
+Ce dernier point est la raison d'être d'une bizarrerie de `Logo.astro` : sa
+prop `size` n'accepte qu'un jeu **fermé** de valeurs, chacune doublée d'une
+règle dans sa feuille de style, là où un `style="--mark-size: 30px"` aurait
+suffi. `Phone.astro` a perdu son `--w` de la même façon, en laissant l'attribut
+`width` de l'image dimensionner le cadre.
+
+> ⚠️ **La panne silencieuse à surveiller.** La CSP autorise nommément le seul
+> script en ligne du site, le JSON-LD de l'accueil, par son empreinte sha256.
+> Modifier ce bloc d'un seul octet invalide l'empreinte, et la donnée
+> structurée disparaît **sans que rien ne casse à l'écran**. Après toute
+> modification de `FICHE` dans `index.astro` :
+>
+> ```bash
+> npm run build && node scripts/csp-hashes.mjs
+> ```
+>
+> puis reporter la valeur dans `public/_headers`.
+
+Le jeton `preload` de HSTS ne fait rien par lui-même : il déclare seulement que
+le site est candidat à la liste de préchargement des navigateurs.
+**L'inscription sur hstspreload.org n'a pas été faite**, et elle ne doit pas
+l'être à la légère : en sortir prend des mois.
+
+### Cache
+
+Workers sert tout en `public, max-age=0, must-revalidate` par défaut. Les pages
+HTML gardent ce réglage, qui leur convient. Les fichiers dont le nom porte une
+empreinte de contenu (`/_astro/*`) passent à un an en `immutable`. Les polices
+aussi, ce qui impose une discipline : **ne jamais remplacer le contenu d'un
+`.woff2` sans changer son nom**, sous peine de le laisser figé un an dans les
+navigateurs.
+
 ## À compléter
 
 - Identité de l'éditeur dans `mentions-legales.astro` et
   `confidentialite.astro` (marqueurs `[À COMPLÉTER]`, rendus en rouge par
   `Legal.astro` pour qu'ils sautent aux yeux) — SCRUM-213 et SCRUM-214.
-- `src/pages/design.astro`, page de contrôle du design system, à supprimer à la
-  fin du lot 1.
+- `_headers` devra servir `apple-app-site-association` en `application/json`
+  sans extension ni redirection, au moment de la soumission aux stores
+  (SCRUM-219).
 - Fichiers `.well-known/` une fois les identifiants de build disponibles.

@@ -14,10 +14,10 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   integrations: [
-    // Ne recense que les pages générées par Astro. Les .html encore présents
-    // dans public/ en sortiront au fil de leur portage (SCRUM-197).
+    // Ne recense que les pages générées par Astro. `/compte/*` en est exclu :
+    // ces pages portent un `noindex` et n'ont rien à faire dans un index.
     sitemap({
-      filter: (page) => !['/compte', '/design'].some((p) => page.includes(p)),
+      filter: (page) => !page.includes('/compte'),
     }),
   ],
   build: {
