@@ -32,4 +32,12 @@ export default defineConfig({
     // partagé entre les pages.
     inlineStylesheets: 'never',
   },
+  vite: {
+    build: {
+      // Même raison, côté scripts : en dessous de 4 ko, Astro écrit le module
+      // directement dans un <script> du HTML, ce qui imposerait
+      // `script-src 'unsafe-inline'`. À 0, tout part en fichier externe.
+      assetsInlineLimit: 0,
+    },
+  },
 });

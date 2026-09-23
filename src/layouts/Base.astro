@@ -62,5 +62,48 @@ const canonical = new URL(chemin, Astro.site).href;
       <slot />
     </main>
     <Footer />
+
+    <script>
+      /* Apparition des blocs à l'entrée dans la fenêtre.
+       *
+       * Astro compile ce bloc en un module externe : pas de script en ligne,
+       * donc `script-src 'self'` suffira à la CSP de SCRUM-198.
+       *
+       * L'état de départ est posé ICI et non dans la feuille de style. Si ce
+       * fichier ne charge pas — erreur réseau, JavaScript coupé, robot
+       * d'indexation — rien n'est masqué et la page reste entière. L'inverse
+       * (un `opacity: 0` en CSS qu'un script vient lever) transforme la moindre
+       * défaillance en page blanche.
+       */
+      const blocs = document.querySelectorAll<HTMLElement>('.reveal');
+      const sobre = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (blocs.length > 0 && !sobre && 'IntersectionObserver' in window) {
+        /* Un bloc déjà dans la fenêtre au moment où le module s'exécute a
+           forcément été peint : l'armer reviendrait à le faire disparaître puis
+           réapparaître sous les yeux du lecteur. On ne s'occupe que de ce qui
+           est encore sous la ligne de flottaison. */
+        const aVenir = [...blocs].filter(
+          (b) => b.getBoundingClientRect().top > window.innerHeight,
+        );
+        aVenir.forEach((b) => b.classList.add('reveal--armee'));
+
+        const vu = new IntersectionObserver(
+          (entrees) => {
+            for (const e of entrees) {
+              if (!e.isIntersecting) continue;
+              e.target.classList.add('reveal--visible');
+              // Une seule fois : le bloc ne doit pas se re-masquer en remontant.
+              vu.unobserve(e.target);
+            }
+          },
+          /* Le bas de la fenêtre est rentré de 10 % : le bloc s'anime une fois
+             franchement entré, pas au ras du bord où l'effet passe inaperçu. */
+          { rootMargin: '0px 0px -10% 0px', threshold: 0.05 },
+        );
+
+        aVenir.forEach((b) => vu.observe(b));
+      }
+    </script>
   </body>
 </html>

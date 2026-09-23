@@ -261,37 +261,25 @@ a:hover {
 }
 
 /* ——— Apparition à l'entrée dans la fenêtre ———
-   Animations pilotées par le défilement (`animation-timeline: view()`), donc
-   sans observateur en JavaScript : rien à charger, rien à desserrer dans la
-   CSP, et le navigateur les fait tourner hors du fil principal.
+   L'armement vient du JavaScript (`Base.astro`), jamais de la feuille de style :
+   sans script, aucune classe `reveal--armee` n'est posée et la page s'affiche
+   entièrement. Un `opacity: 0` écrit en dur ici rendrait la page blanche dès que
+   le script ne charge pas — c'est la faute classique de ce motif.
 
-   L'état transparent n'existe QUE dans les keyframes, jamais en style statique :
-   si le navigateur ne connaît pas `view()`, le `@supports` ne s'applique pas et
-   le contenu s'affiche normalement. Un `opacity: 0` posé en dur, lui, rendrait
-   la page blanche sur un navigateur sans la fonctionnalité — c'est la faute
-   classique de ce motif.
+   Première tentative écartée : `animation-timeline: view()`, qui aurait évité le
+   script. Le minifieur replie `animation-timeline` dans le raccourci
+   `animation`, où ce n'est pas une valeur valide, et la déclaration entière
+   tombe. Vérifié en production : rien ne s'animait. */
 
-   La plage s'arrête à `entry 60%` et non à `cover` : un élément proche du bas de
-   page doit finir son animation AVANT que le défilement ne bute, sinon il reste
-   figé à demi transparent. */
-
-@keyframes apparait {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.reveal--armee {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 520ms ease,
+    transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .reveal {
-      animation: apparait linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 60%;
-    }
-  }
+.reveal--visible {
+  opacity: 1;
+  transform: none;
 }
