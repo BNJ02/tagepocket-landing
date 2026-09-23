@@ -1,0 +1,95 @@
+---
+/**
+ * Mentions légales — portage de `public/mentions-legales.html` (SCRUM-197).
+ *
+ * Contenu repris. L'hébergeur du site est précisé (Cloudflare Workers depuis
+ * SCRUM-194) et le ton passe au tutoiement, comme le reste du site.
+ *
+ * Les marqueurs [À COMPLÉTER] restent, et c'est délibéré : la SAS n'est pas
+ * encore immatriculée, donc dénomination, capital, RCS, SIREN et TVA intra
+ * n'existent pas. Ils sont traités en SCRUM-213, bloquant pour le passage de
+ * Stripe en mode live. Les laisser voyants vaut mieux que d'inventer une
+ * mention légale : l'article 6-III de la LCEN exige qu'elle soit exacte.
+ */
+import Legal from '../layouts/Legal.astro';
+import { CONTACT_EMAIL } from '../lib/nav';
+---
+
+<Legal
+  title="Mentions légales · TagePocket"
+  description="Mentions légales du site et de l'application TagePocket : éditeur, hébergeur, propriété intellectuelle et contact."
+  h1="Mentions légales"
+  maj="23 septembre 2026"
+>
+  <h2>Éditeur</h2>
+  <dl class="paire">
+    <div>
+      <dt>Éditeur</dt>
+      <dd><span class="todo">[À COMPLÉTER : dénomination, forme sociale, capital]</span></dd>
+    </div>
+    <div>
+      <dt>Immatriculation</dt>
+      <dd><span class="todo">[À COMPLÉTER : RCS et ville, SIREN, TVA intracommunautaire]</span></dd>
+    </div>
+    <div>
+      <dt>Siège social</dt>
+      <dd><span class="todo">[À COMPLÉTER : adresse du siège]</span></dd>
+    </div>
+    <div>
+      <dt>Directeur de la publication</dt>
+      <dd><span class="todo">[À COMPLÉTER : nom et prénom]</span></dd>
+    </div>
+    <div>
+      <dt>Contact</dt>
+      <dd><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></dd>
+    </div>
+  </dl>
+
+  <h2>Hébergement du site</h2>
+  <dl class="paire">
+    <div>
+      <dt>Hébergeur</dt>
+      <dd>Cloudflare, Inc. (Cloudflare Workers)</dd>
+    </div>
+    <div>
+      <dt>Adresse</dt>
+      <dd>101 Townsend Street, San Francisco, CA 94107, États-Unis</dd>
+    </div>
+    <div>
+      <dt>Site</dt>
+      <dd><a href="https://www.cloudflare.com" rel="noopener">cloudflare.com</a></dd>
+    </div>
+  </dl>
+
+  <h2>Hébergement des données de l’application</h2>
+  <dl class="paire">
+    <div>
+      <dt>Prestataire</dt>
+      <dd>Supabase</dd>
+    </div>
+    <div>
+      <dt>Région</dt>
+      <dd>eu-central-1, Francfort, Allemagne (Union européenne)</dd>
+    </div>
+    <div>
+      <dt>Site</dt>
+      <dd><a href="https://supabase.com" rel="noopener">supabase.com</a></dd>
+    </div>
+  </dl>
+
+  <h2>Nom de domaine</h2>
+  <p>
+    Le domaine <strong>tagepocket.fr</strong> est enregistré auprès d’OVHcloud
+    (SAS OVH, France).
+  </p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>
+    La marque TagePocket, l’application et ce site sont protégés. TAGE MAGE® est
+    une marque de la FNEGE. TagePocket est un outil de préparation indépendant,
+    sans lien avec l’organisateur du concours.
+  </p>
+
+  <h2>Contact</h2>
+  <p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+</Legal>

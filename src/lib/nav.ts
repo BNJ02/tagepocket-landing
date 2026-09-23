@@ -52,4 +52,14 @@ export const LEGAL_NAV: NavLink[] = [
 
 export const CONTACT_EMAIL = 'contact@tagepocket.fr';
 
+/**
+ * Adresse d'assistance, distincte de `CONTACT_EMAIL`.
+ *
+ * Les deux existent déjà et sont annoncées sur l'ancien site : `contact@` pour
+ * le juridique et les données personnelles, `support@` pour les pannes. Les
+ * fusionner obligerait à republier les mentions légales et la politique de
+ * confidentialité, que les stores référencent.
+ */
+export const SUPPORT_EMAIL = 'support@tagepocket.fr';
+
 export const live = (links: NavLink[]): NavLink[] => links.filter((l) => l.ready);

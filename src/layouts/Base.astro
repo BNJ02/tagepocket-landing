@@ -10,9 +10,17 @@ interface Props {
   description: string;
   /** Tenir la page hors des moteurs — /compte/*, pages de contrôle. */
   noindex?: boolean;
+  /**
+   * Vignette de partage, chemin absolu depuis la racine du site.
+   *
+   * Par défaut la vignette générale, produite par `scripts/gen-og.py`. Une page
+   * ne la remplace que si elle a vraiment mieux à montrer : une vignette
+   * spécifique mal cadrée vaut moins que la vignette de marque.
+   */
+  image?: string;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, image = '/og.png' } = Astro.props;
 
 /* Astro.site vient de `site` dans astro.config.mjs.
    `build.format: 'file'` fait que `Astro.url.pathname` porte l'extension du
@@ -24,6 +32,11 @@ const { title, description, noindex = false } = Astro.props;
    pour la seule racine — là encore, pour coller au sitemap. */
 const chemin = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '');
 const canonical = new URL(chemin, Astro.site).href;
+
+/* Open Graph exige une URL ABSOLUE pour l'image : les robots de Facebook,
+   LinkedIn, WhatsApp, Slack ou Discord lisent le HTML hors de tout contexte de
+   navigation et ne résolvent pas un chemin relatif. */
+const vignette = new URL(image, Astro.site).href;
 ---
 
 <!doctype html>
@@ -35,6 +48,29 @@ const canonical = new URL(chemin, Astro.site).href;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, follow" />}
+
+    {/* Open Graph — la vignette affichée quand le lien est collé quelque part.
+        Sans ces balises, la plupart des messageries n'affichent rien du tout,
+        et les autres piochent au hasard dans la page.
+
+        `og:title` reprend le titre d'onglet, suffixe compris : dans un fil de
+        discussion, la vignette est sortie de son contexte et doit dire de quel
+        site elle vient. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TagePocket" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={vignette} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Gaston, le castor bûcheron de TagePocket, scie une bûche." />
+
+    {/* X/Twitter ignore og:image:width et choisit son format sur cette seule
+        balise. `summary_large_image` donne la grande vignette ; sans elle, la
+        même image est réduite à une miniature carrée. */}
+    <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/brand/mark-32.png" sizes="32x32" type="image/png" />

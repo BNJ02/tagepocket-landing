@@ -1,0 +1,158 @@
+---
+/**
+ * Gabarit des pages de texte long : support, confidentialité, mentions
+ * légales, et plus tard CGV et CGU (SCRUM-212).
+ *
+ * Ces pages n'ont ni section ni rythme visuel : elles se lisent d'un bout à
+ * l'autre. La seule chose qui compte est la largeur de la colonne, plafonnée à
+ * `--measure` (~68 caractères) — au-delà, l'œil perd la ligne au retour.
+ *
+ * Le style est posé ici et non dans chaque page : trois copies d'une même règle
+ * de tableau finissent par diverger, et c'est précisément ce qui était arrivé
+ * entre `style.css` et les tokens de l'app (voir l'en-tête de tokens.css).
+ */
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Titre affiché, sans le suffixe « · TagePocket » du titre d'onglet. */
+  h1: string;
+  /** Date de dernière mise à jour, déjà rédigée : « 23 septembre 2026 ». */
+  maj?: string;
+  /** Phrase d'accroche sous le titre, à la place de la date. */
+  chapo?: string;
+}
+
+const { title, description, h1, maj, chapo } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <article class="page legal">
+    <h1>{h1}</h1>
+    {chapo && <p class="legal__chapo">{chapo}</p>}
+    {maj && <p class="legal__maj">Dernière mise à jour : {maj}</p>}
+    <slot />
+  </article>
+</Base>
+
+<style>
+  .legal {
+    padding-block: var(--space-16) var(--space-24);
+  }
+
+  .legal h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .legal__chapo {
+    margin-top: var(--space-4);
+    color: var(--ink-2);
+    font-size: var(--text-lg);
+  }
+
+  .legal__maj {
+    margin-top: var(--space-3);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+  }
+
+  /* `:global` parce que le contenu arrive par un <slot> : les styles à portée
+     de composant d'Astro ne marquent que les éléments écrits dans CE fichier. */
+
+  .legal :global(h2) {
+    margin-top: var(--space-12);
+    font-size: var(--text-xl);
+    font-weight: 600;
+  }
+
+  .legal :global(h3) {
+    margin-top: var(--space-8);
+    font-size: var(--text-lg);
+  }
+
+  .legal :global(p),
+  .legal :global(ul),
+  .legal :global(ol) {
+    margin-top: var(--space-4);
+    max-width: var(--measure);
+    color: var(--ink-2);
+  }
+
+  .legal :global(li + li) {
+    margin-top: var(--space-2);
+  }
+
+  .legal :global(strong) {
+    color: var(--ink);
+  }
+
+  /* Encart de lecture — le bois porte et sépare. */
+  .legal :global(.encart) {
+    margin-top: var(--space-6);
+    padding: var(--space-6);
+    border: 1px solid var(--bois-300);
+    border-radius: var(--radius);
+    background: var(--bois-100);
+  }
+
+  .legal :global(.encart > :first-child) {
+    margin-top: 0;
+  }
+
+  .legal :global(.encart h2),
+  .legal :global(.encart h3) {
+    margin-top: 0;
+    font-size: var(--text-lg);
+  }
+
+  /* Tableau clé/valeur. `display: grid` plutôt qu'un vrai tableau : à 360 px de
+     large, deux colonnes de tableau écrasent la valeur sur cinq lignes. Ici
+     l'étiquette passe au-dessus. */
+  .legal :global(.paire) {
+    margin-top: var(--space-6);
+    border: 1px solid var(--bois-300);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .legal :global(.paire > div) {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-6);
+  }
+
+  .legal :global(.paire > div + div) {
+    border-top: 1px solid var(--bois-300);
+  }
+
+  .legal :global(.paire dt) {
+    font-weight: 600;
+  }
+
+  .legal :global(.paire dd) {
+    margin: 0;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 44rem) {
+    .legal :global(.paire > div) {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+
+  /* Marqueur des informations qui manquent encore, en attendant
+     l'immatriculation de la SAS (lot 5 : SCRUM-213 et SCRUM-214). Volontairement
+     voyant : une mention légale incomplète doit sauter aux yeux en relecture,
+     pas se fondre dans le texte. */
+  .legal :global(.todo) {
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-sm);
+    background: var(--bad-soft);
+    color: var(--bad-ink);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+</style>

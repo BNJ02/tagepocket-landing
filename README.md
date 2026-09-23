@@ -219,10 +219,10 @@ la marque lisible sur fond clair.
 > commit `0e1cf57`). Le déplacer ou le renommer casse l'image de tous les mails
 > du compte. Il n'est référencé par aucune page du site.
 >
-> `public/logo@2x.png` (300 ko), en revanche, n'est référencé **nulle part** :
-> la convention `@2x` est celle du bundler Metro, qui n'existe pas sur le web —
-> un client mail ne va pas chercher un `@2x` tout seul. Candidat à la
-> suppression en SCRUM-197.
+> `public/logo@2x.png` (300 ko) a été **supprimé en SCRUM-197** : il n'était
+> référencé nulle part. La convention `@2x` est celle du bundler Metro, qui
+> n'existe pas sur le web, et aucun client mail ne va chercher un `@2x` tout
+> seul.
 
 Les dérivés ne se retouchent jamais à la main : tout se régénère par
 `python3 scripts/gen-brand-assets.py` dans le dépôt de l'app, depuis
@@ -272,28 +272,72 @@ réservent la place avant le chargement, sinon la page saute.
 > correction, révisions. Pour montrer les Stats, il faut d'abord un compte de
 > démonstration crédible.
 
+### Référencement et partage
+
+`Base.astro` pose sur chaque page l'URL canonique, les balises Open Graph et
+`twitter:card`. Quatre points valent d'être retenus :
+
+- **L'URL canonique retire l'extension.** `build.format: 'file'` fait que
+  `Astro.url.pathname` vaut `/support.html`, alors que Workers sert la page à
+  `/support` et que le sitemap liste `/support`. Sans le nettoyage, la balise
+  canonique et le sitemap se contrediraient, et le moteur choisirait seul.
+- **`og:image` doit être absolue.** Les robots de LinkedIn, WhatsApp ou Slack
+  lisent le HTML hors de tout contexte de navigation et ne résolvent aucun
+  chemin relatif.
+- **`public/og.png` se régénère**, jamais à la main :
+
+  ```bash
+  python3 scripts/gen-og.py     # 1200 × 630, ~134 ko
+  ```
+
+  Le script lit deux fichiers **hors de ce dépôt**, dans `~/memora_tage_mage` :
+  le Gaston détouré `assets/brand/logo-cutout.png` et les `.ttf` Hanken Grotesk
+  de `node_modules/@expo-google-fonts/`. Les `.woff2` de `public/fonts/` ne
+  conviennent pas : Pillow ne sait pas les lire, et il n'y a ici ni fontTools ni
+  moteur de rendu SVG. L'image produite **est versionnée**, parce que Workers
+  Builds construit le site sans accès au dépôt de l'app. Elle est ramenée à 256
+  couleurs : WhatsApp ignore une vignette de plus de 300 ko.
+- **Le JSON-LD de l'accueil est en ligne, et c'est inévitable** : Google ne lit
+  pas une donnée structurée chargée par `<link rel="alternate">`. La CSP de
+  SCRUM-198 devra donc porter son empreinte, que
+  `node scripts/csp-hashes.mjs` calcule sur le `dist/` construit. La fiche ne
+  porte **aucune note** : sans application publiée, un `aggregateRating`
+  inventé est un faux, sanctionné par une action manuelle.
+
+### Redirections
+
+`public/_redirects` traduit les quatre URL de l'ancien site en **301**.
+`html_handling: "auto-trailing-slash"` fait déjà la normalisation, mais en
+**307**, c'est-à-dire temporaire : les moteurs garderaient l'ancienne URL dans
+leur index sans lui transférer d'autorité. `/confidentialite.html` est en outre
+déclarée dans les fiches App Store et Google Play, donc la redirection est une
+obligation, pas une propreté.
+
+Cloudflare applique ces règles « regardless of whether or not an asset matches
+the incoming request » : elles priment donc sur le 307 automatique, bien que
+`dist/support.html` existe réellement.
+
 ## Arborescence
 
 | Chemin | Rôle |
 |---|---|
-| `src/pages/` | routes (`index.astro`, `404.astro`, `design.astro` temporaire) |
-| `src/layouts/` | `Base.astro` — head, polices, en-tête, pied de page |
+| `src/pages/` | routes (`index`, `support`, `confidentialite`, `mentions-legales`, `404`, `design` temporaire) |
+| `src/layouts/` | `Base.astro` (head, polices, en-tête, pied de page) et `Legal.astro` (pages de texte long) |
 | `src/components/` | `Logo`, `Header`, `Footer`, `Phone`, `Faq` |
 | `src/styles/` | design system « La Clairière » |
 | `src/lib/` | `nav.ts` (liens), `offre.ts` (prix) ; Supabase et facturation aux lots 2 et 4 |
 | `public/fonts/` | Hanken Grotesk et JetBrains Mono, `.woff2` latin |
 | `public/brand/` | favicon, icônes, les quatre Gaston |
 | `public/screens/` | captures réelles de l'app, rognées et converties en WebP |
-| `public/` | servi verbatim ; contient encore les 3 pages HTML héritées |
+| `public/` | servi verbatim : `robots.txt`, `_redirects`, `og.png`, `favicon.svg`, `logo.png` |
+| `scripts/` | `gen-og.py` (vignette de partage), `csp-hashes.mjs` (empreintes pour la CSP) |
 | `public/.well-known/` | universal links (AASA + assetlinks) — SCRUM-217 |
 | `public/.assetsignore` | fichiers de `dist/` à ne pas publier |
 | `wrangler.jsonc` | configuration de déploiement Cloudflare Workers |
 
-`public/index.html` a disparu avec **SCRUM-196** : l'accueil est désormais
-`src/pages/index.astro`. Les trois pages restantes — `confidentialite.html`,
-`support.html`, `mentions-legales.html` — sont encore servies verbatim depuis
-`public/` et **vouvoient toujours** ; elles sont portées en `.astro`, au
-tutoiement, par **SCRUM-197**, avec les redirections `.html` → sans extension.
+Il ne reste plus un seul `.html` dans `public/` : l'accueil est parti en
+**SCRUM-196**, les trois dernières pages en **SCRUM-197**, toutes au tutoiement.
+`public/style.css` est parti avec elles, ainsi que `public/logo@2x.png`.
 
 ## Sécurité
 
@@ -304,6 +348,9 @@ Supabase de `~/memora_tage_mage/supabase/functions/`.
 
 ## À compléter
 
-- Identité de l'éditeur dans `mentions-legales.html` et `confidentialite.html`
-  (marqueurs `[À COMPLÉTER]`) — SCRUM-213 et SCRUM-214.
+- Identité de l'éditeur dans `mentions-legales.astro` et
+  `confidentialite.astro` (marqueurs `[À COMPLÉTER]`, rendus en rouge par
+  `Legal.astro` pour qu'ils sautent aux yeux) — SCRUM-213 et SCRUM-214.
+- `src/pages/design.astro`, page de contrôle du design system, à supprimer à la
+  fin du lot 1.
 - Fichiers `.well-known/` une fois les identifiants de build disponibles.

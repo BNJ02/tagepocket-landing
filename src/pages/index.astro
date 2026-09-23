@@ -38,12 +38,52 @@ const FAQ = [
 ];
 
 const mensuel = FORMULES[0];
+
+/* Données structurées — la fiche que les moteurs lisent à la place du texte.
+ *
+ * Volontairement sans `aggregateRating` : Google n'accorde de résultat enrichi
+ * à une SoftwareApplication que si elle porte une note ou un avis, et
+ * l'application n'est pas encore publiée. Inventer une note de 4,8 sur 137 avis
+ * serait un faux, sanctionné par une action manuelle pour « avis frauduleux ».
+ * La fiche reste donc exacte et modeste ; la note viendra des stores.
+ *
+ * Les prix viennent de `offre.ts`, comme la section tarifs : un prix recopié
+ * ici finirait par contredire celui affiché juste en dessous.
+ */
+const FICHE = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'TagePocket',
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'iOS, Android',
+  inLanguage: 'fr-FR',
+  url: 'https://www.tagepocket.fr',
+  description:
+    'Préparation au TAGE MAGE en séances courtes : les six sous-épreuves au format réel, la méthode détaillée après chaque question, et un score estimé sur 600.',
+  offers: FORMULES.map((f) => ({
+    '@type': 'Offer',
+    name: f.nom,
+    price: f.prix.toFixed(2),
+    priceCurrency: 'EUR',
+    category: 'subscription',
+    url: 'https://www.tagepocket.fr/#tarifs',
+  })),
+};
 ---
 
 <Base
   title="TagePocket · le TAGE MAGE, un peu chaque jour"
   description="Prépare le TAGE MAGE en séances courtes : les six sous-épreuves au format réel, la méthode détaillée après chaque question, et un score estimé sur 600 qui s'affine à chaque série."
 >
+  {/* `set:html` et non une interpolation : Astro échapperait les guillemets du
+      JSON en &quot;, et le bloc deviendrait illisible pour les robots.
+
+      Ce bloc est en ligne, faute d'alternative : Google ne lit pas un JSON-LD
+      chargé par <link rel="alternate">. La CSP de SCRUM-198 devra donc porter
+      son empreinte sha256 dans `script-src` — `scripts/csp-hashes.mjs` la
+      calcule sur le dist/ construit. */}
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(FICHE)} slot="head" />
+
   <!-- ————————————————— 1. Héros ————————————————— -->
   <section class="hero">
     <div class="page hero__in">

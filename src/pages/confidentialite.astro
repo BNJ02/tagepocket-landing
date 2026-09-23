@@ -1,0 +1,139 @@
+---
+/**
+ * Politique de confidentialité — portage de `public/confidentialite.html`
+ * (SCRUM-197).
+ *
+ * ⚠️ L'URL `https://www.tagepocket.fr/confidentialite.html` est DÉCLARÉE DANS
+ * LES STORES. La redirection 301 posée dans `public/_redirects` n'est donc pas
+ * cosmétique : sans elle, la fiche de l'application pointe vers un 404.
+ *
+ * Le fond juridique est repris tel quel. Deux choses seulement changent :
+ *
+ *   · le ton, qui passe au tutoiement comme le reste du site ;
+ *   · l'hébergeur du site vitrine, qui n'est plus Cloudflare Pages mais
+ *     Cloudflare Workers depuis la migration du 23/09/2026 (SCRUM-194). Une
+ *     politique de confidentialité qui nomme le mauvais hébergeur est fausse,
+ *     pas imprécise.
+ *
+ * Reste à corriger au lot 5 : le responsable du traitement (SCRUM-214), une
+ * fois la SAS immatriculée, l'ajout de Stripe Payments Europe comme
+ * sous-traitant, et la conservation comptable de dix ans des factures, qui
+ * déroge à l'effacement sous trente jours annoncé ici.
+ */
+import Legal from '../layouts/Legal.astro';
+import { CONTACT_EMAIL } from '../lib/nav';
+---
+
+<Legal
+  title="Politique de confidentialité · TagePocket"
+  description="Politique de confidentialité de TagePocket : données collectées, finalités, hébergement dans l'Union européenne et droits RGPD."
+  h1="Politique de confidentialité"
+  maj="23 septembre 2026"
+>
+  <p>
+    Cette politique décrit les données personnelles traitées par l’application
+    mobile <strong>TagePocket</strong> et par ce site, ainsi que les droits dont
+    tu disposes. Elle est rédigée conformément au Règlement général sur la
+    protection des données (RGPD).
+  </p>
+
+  <h2>1. Responsable du traitement</h2>
+  <p>
+    Le responsable du traitement est{' '}
+    <span class="todo">[À COMPLÉTER : dénomination sociale de l’éditeur]</span>,
+    éditeur de TagePocket. Contact :{' '}
+    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+  </p>
+
+  <h2>2. Données que nous traitons</h2>
+  <dl class="paire">
+    <div>
+      <dt>Compte</dt>
+      <dd>
+        Ton adresse e-mail et ton mot de passe (chiffré), pour créer et
+        sécuriser ton compte.
+      </dd>
+    </div>
+    <div>
+      <dt>Progression</dt>
+      <dd>
+        Tes réponses aux questions, ton historique d’entraînement, ton score
+        estimé, ton XP et tes séries, pour faire fonctionner l’entraînement et
+        les révisions.
+      </dd>
+    </div>
+    <div>
+      <dt>Préférences</dt>
+      <dd>
+        Thème d’affichage, date d’examen, réglages, pour personnaliser
+        l’application.
+      </dd>
+    </div>
+    <div>
+      <dt>Données techniques</dt>
+      <dd>
+        Les informations strictement nécessaires au fonctionnement (identifiant
+        de session). Aucun traceur publicitaire.
+      </dd>
+    </div>
+  </dl>
+  <p>
+    Nous ne diffusons <strong>aucune publicité</strong> et ne vendons{' '}
+    <strong>aucune donnée</strong> à des tiers.
+  </p>
+
+  <h2>3. Finalités et base légale</h2>
+  <ul>
+    <li>
+      Fournir le service d’entraînement et suivre ta progression :{' '}
+      <em>exécution du contrat</em>.
+    </li>
+    <li>
+      Sécuriser les comptes et prévenir les abus : <em>intérêt légitime</em>.
+    </li>
+    <li>Répondre à tes demandes de support : <em>intérêt légitime</em>.</li>
+  </ul>
+
+  <h2>4. Hébergement</h2>
+  <p>
+    Les données de l’application sont hébergées par <strong>Supabase</strong>{' '}
+    dans l’Union européenne (région <strong>eu-central-1, Francfort,
+    Allemagne</strong>). Ce site est hébergé par{' '}
+    <strong>Cloudflare Workers</strong>. Les e-mails transactionnels
+    (confirmation d’inscription, réinitialisation de mot de passe) sont
+    acheminés par <strong>Resend</strong>.
+  </p>
+
+  <h2>5. Cookies et traceurs</h2>
+  <p>
+    Ce site ne dépose <strong>aucun cookie publicitaire ni de mesure
+    d’audience</strong> : ni Google Analytics, ni pixel de réseau social. C’est
+    la raison pour laquelle tu n’as pas eu de bandeau à refuser en arrivant.
+    Seul un stockage local strictement nécessaire est utilisé, pour te garder
+    connecté d’une page à l’autre.
+  </p>
+
+  <h2>6. Durée de conservation</h2>
+  <p>
+    Tes données sont conservées tant que ton compte est actif. À la suppression
+    de ton compte, elles sont effacées sous 30 jours, sauf obligation légale de
+    conservation.
+  </p>
+
+  <h2>7. Tes droits</h2>
+  <p>
+    Tu disposes d’un droit d’accès, de rectification, d’effacement, de
+    limitation, d’opposition et de portabilité. Pour les exercer, écris à{' '}
+    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Tu peux également
+    introduire une réclamation auprès de la CNIL (<a
+      href="https://www.cnil.fr"
+      rel="noopener">cnil.fr</a
+    >).
+  </p>
+
+  <h2>8. Contact</h2>
+  <p>
+    Pour toute question relative à tes données :{' '}
+    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+  </p>
+</Legal>

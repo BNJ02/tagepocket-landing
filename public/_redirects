@@ -1,0 +1,22 @@
+# Redirections servies par Workers Static Assets (SCRUM-197).
+#
+# Format : [source] [destination] [code], un par ligne, « # » en commentaire.
+# Lu par Cloudflare au déploiement, jamais servi comme fichier : `.assetsignore`
+# l'exclut des assets publics.
+#
+# Pourquoi ce fichier alors que `html_handling: "auto-trailing-slash"` fait
+# déjà le travail : oui, mais en 307. Un 307 est TEMPORAIRE. Les moteurs
+# gardent l'ancienne URL dans leur index et n'y transfèrent aucune autorité.
+# Ces quatre URL sont celles de l'ancien site, en ligne depuis des mois, et
+# `/confidentialite.html` est en plus déclarée dans les fiches App Store et
+# Google Play. Il leur faut un 301, permanent.
+#
+# « Redirects are always followed, regardless of whether or not an asset
+# matches the incoming request » : la règle s'applique même si le fichier
+# `support.html` existe bel et bien dans dist/, ce qui est le cas puisque Astro
+# est en `build.format: 'file'`.
+
+/index.html             /                   301
+/support.html           /support            301
+/confidentialite.html   /confidentialite    301
+/mentions-legales.html  /mentions-legales   301

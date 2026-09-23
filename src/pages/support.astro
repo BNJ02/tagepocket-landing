@@ -1,0 +1,79 @@
+---
+/**
+ * Support — portage de l'ancien `public/support.html` (SCRUM-197).
+ *
+ * Le contenu est repris, mais le ton change : l'ancienne page vouvoyait alors
+ * que l'app tutoie partout. Réécrite au tutoiement, comme la landing.
+ *
+ * Les questions sont les mêmes qu'avant, plus deux que la refonte rend
+ * possibles : l'abonnement se prend sur le site, donc le support doit savoir
+ * répondre à « où est ma facture ». Les réponses définitives arriveront avec
+ * les pages de facturation (lot 4) ; celles-ci renvoient déjà au bon endroit.
+ */
+import Legal from '../layouts/Legal.astro';
+import Faq from '../components/Faq.astro';
+import { CONTACT_EMAIL, SUPPORT_EMAIL } from '../lib/nav';
+
+const QUESTIONS = [
+  { q: 'L’application est-elle disponible ?', slot: 'q1' },
+  { q: 'Je n’ai pas reçu l’e-mail de confirmation', slot: 'q2' },
+  { q: 'J’ai oublié mon mot de passe', slot: 'q3' },
+  { q: 'Comment supprimer mon compte et mes données ?', slot: 'q4' },
+  { q: 'J’ai trouvé une erreur dans une question', slot: 'q5' },
+];
+---
+
+<Legal
+  title="Support · TagePocket"
+  description="Une question, un bug, une suggestion sur TagePocket ? Écris-nous, et consulte les questions fréquentes."
+  h1="Support"
+  chapo="Une question, un bug, une suggestion ? On répond."
+>
+  <div class="encart">
+    <h2>Nous écrire</h2>
+    <p>
+      Le plus simple :{' '}
+      <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. Décris ton
+      problème, et si tu peux, ajoute ton modèle de téléphone et la version de
+      l’application. On revient vers toi rapidement.
+    </p>
+  </div>
+
+  <h2>Questions fréquentes</h2>
+
+  <Faq questions={QUESTIONS}>
+    <p slot="q1">
+      TagePocket arrive prochainement sur l’App Store et sur Google Play.
+      Écris-nous pour être prévenu du lancement.
+    </p>
+
+    <p slot="q2">
+      Regarde d’abord dans ton dossier « courrier indésirable » : c’est là qu’il
+      finit neuf fois sur dix. Si rien n’arrive au bout de quelques minutes,
+      écris-nous à{' '}
+      <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> et on confirmera
+      ton compte à la main.
+    </p>
+
+    <p slot="q3">
+      Depuis l’écran de connexion de l’application, choisis « mot de passe
+      oublié ». Tu reçois un code à six chiffres par e-mail, valable quelques
+      minutes, qui te laisse en choisir un nouveau.
+    </p>
+
+    <p slot="q4">
+      Depuis l’application, ou en écrivant à{' '}
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Tes données sont
+      effacées sous 30 jours : le détail de ce qui est supprimé et de ce qui est
+      conservé figure dans la{' '}
+      <a href="/confidentialite">politique de confidentialité</a>.
+    </p>
+
+    <p slot="q5">
+      Signale-la : c’est le genre de message qui nous rend le plus service.
+      Envoie une capture d’écran à{' '}
+      <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>, on corrige et la
+      correction arrive chez tout le monde sans mise à jour de l’application.
+    </p>
+  </Faq>
+</Legal>
