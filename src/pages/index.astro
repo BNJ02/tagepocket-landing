@@ -666,6 +666,19 @@ const mensuel = FORMULES[0];
     }
   }
 
+  /* Le héros s'empile et se centre : il n'y a plus de gouttière à gauche où
+     poser Gaston, et il sortait de l'écran. Il passe au coin bas-droit du
+     cadre, entièrement visible. */
+  @media (max-width: 56rem) {
+    .hero__gaston {
+      left: auto;
+      right: -16px;
+      bottom: -20px;
+      width: 104px;
+      height: 104px;
+    }
+  }
+
   @media (max-width: 36rem) {
     .sec,
     .sec--tarifs,
@@ -674,7 +687,6 @@ const mensuel = FORMULES[0];
     }
 
     .hero__gaston {
-      left: -28px;
       width: 88px;
       height: 88px;
     }
