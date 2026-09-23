@@ -52,53 +52,71 @@ Le routage est déclaré dans `wrangler.jsonc` :
 > historiques du site sont en `.html` : SCRUM-197 doit poser des **301**
 > explicites dans `public/_redirects` pour consolider le référencement.
 
-### Bascule du domaine — bloquée, et pourquoi
+### Zone DNS — transférée chez Cloudflare le 23/09/2026
 
-**Un custom domain de Worker exige que la zone DNS soit hébergée chez
-Cloudflare.** L'API crée elle-même l'enregistrement et échoue sinon, avec
-`Can't infer zone from route [code: 10082]`. Un custom domain de *Pages* se
-contentait d'un CNAME depuis n'importe quel hébergeur DNS : c'est la différence
-qui a été manquée lors de la première tentative de bascule, et elle a mis le
-site hors ligne le 22/09/2026.
+`tagepocket.fr` est servi par `nia.ns.cloudflare.com` / `thaddeus.ns.cloudflare.com`.
+Zone `be86ff537a1169334bbf8d6753c5949d`, active depuis le 23/09/2026 00:06:59 UTC,
+délégation publiée au registre AFNIC à 02:06.
 
-`tagepocket.fr` est délégué à OVHcloud (`ns106.ovh.net`) et le compte Cloudflare
-ne contient aucune zone. Tant que ce n'est pas le cas, pas de bloc `routes` dans
-`wrangler.jsonc`, et le Worker n'est joignable que sur `*.workers.dev`.
+Le domaine reste **acheté et géré chez OVH**, et les deux boîtes mail restent sur
+le MX Plan OVH : déplacer le DNS ne transfère pas le domaine et ne déplace pas les
+mailboxes. Seuls les enregistrements qui *désignent* ces serveurs ont changé de
+zone. Registrar, DNS autoritatif et hébergeur de mail sont trois choses distinctes
+— une seule a bougé.
 
-Le domaine reste acheté et géré chez OVH : déplacer le DNS ne transfère pas le
-domaine et ne déplace pas les boîtes mail, qui restent sur le MX Plan OVH. Seuls
-les enregistrements qui *désignent* ces serveurs changent de zone.
+#### La leçon qui a coûté une coupure
 
-#### Ordre impératif du transfert
+**Un custom domain de Worker exige que la zone DNS soit hébergée chez Cloudflare.**
+L'API crée elle-même l'enregistrement et échoue sinon, avec
+`Can't infer zone from route [code: 10082]` ; `wrangler deploy` affiche
+« Trigger configuration was only partially updated » et **ne fait aucun rollback**.
+Un custom domain de *Pages* se contente d'un CNAME depuis n'importe quel hébergeur
+DNS — c'est cette asymétrie qui a été manquée le 22/09/2026, et elle a mis le site
+hors ligne deux heures. Ne jamais détacher un domaine de Pages avant que sa
+destination soit prouvée.
 
-1. **Désactiver DNSSEC chez OVH d'abord.** Un DS est publié au registre `.fr`.
-   Changer les nameservers sans retirer ce DS rend le domaine totalement
-   irrésolvable pour les résolveurs validants. Le retrait prend quelques heures.
-2. Exporter la zone OVH (format BIND) et créer la zone chez Cloudflare, en
-   vérifiant le scan enregistrement par enregistrement contre cet export. Un
-   sondage DNS depuis l'extérieur ne suffit pas : il ne peut pas deviner les
-   sélecteurs DKIM d'OVH (`ovhmoXXXXX-selector1._domainkey`), dont l'oubli fait
-   tomber les mails en spam.
-3. Vérifier en particulier les 4 MX `mx0..mx3.mail.ovh.net` (priorités 1, 5, 50,
-   100), le SPF `v=spf1 include:mx.ovh.com ~all` et le `_dmarc`. Ils portent
-   `contact@` et `support@tagepocket.fr`.
+#### Ordre suivi pour le transfert
+
+1. **Désactiver DNSSEC chez OVH d'abord.** Un DS était publié au registre `.fr`
+   (`33709 8 2 8CB801C8…`). Changer les nameservers sans l'avoir retiré rend le
+   domaine totalement irrésolvable pour les résolveurs validants. Attendre sa
+   disparition effective chez 1.1.1.1, 8.8.8.8 et 9.9.9.9 avant la suite.
+2. Partir de l'**export BIND** de la zone OVH, jamais d'un sondage `dig` : les
+   sélecteurs DKIM d'OVH (`ovhmo-selector-1/2._domainkey` → `…jp.dkim.mail.ovh.net`,
+   identifiants propres au compte) et le SRV `_autodiscover._tcp` sont indevinables
+   de l'extérieur, et leur oubli fait tomber les mails en spam.
+3. Vérifier le scan Cloudflare ligne à ligne contre l'export — 14 enregistrements.
 4. Seulement ensuite, basculer les nameservers chez OVH.
-5. Zone active → ajouter le bloc `routes` dans `wrangler.jsonc`, passer
-   `workers_dev` à `false`, `npm run deploy`.
 
-#### À recréer, sans équivalent automatique
+Contrôle du registre `.fr` : la délégation parente arrive en section **AUTHORITY**,
+que `+short` n'affiche pas. Utiliser
+`dig +noall +authority tagepocket.fr NS @d.nic.fr`.
 
-| Ancien mécanisme OVH | Remplacement Cloudflare |
-|---|---|
-| `A @ → 213.186.33.5` + `TXT @ → 4\|https://www.tagepocket.fr` — redirection apex propriétaire | Redirect Rule 301 `tagepocket.fr/*` → `https://www.tagepocket.fr/$1` |
-| `CNAME www → tagepocket-landing.pages.dev` | custom domain du Worker |
-| DNSSEC géré par OVH | DNSSEC Cloudflare, avec un nouveau DS à déclarer côté registrar |
+#### Corrections passées au même moment
+
+| Enregistrement | Avant (OVH) | Après (Cloudflare) |
+|---|---|---|
+| SPF et MX du domaine d'envoi Resend | posés sur `send.send.tagepocket.fr` — un niveau de trop, donc **aucun SPF** et bounces SES non routés | posés sur `send` |
+| Apex | `A @ → 213.186.33.5` + `TXT @ → 4\|https://www.tagepocket.fr`, mécanisme propriétaire OVH sans certificat — `https://tagepocket.fr` renvoyait `Connection reset` | `AAAA @ → 100::` proxié (prefix discard) + Redirect Rule |
+| DNSSEC | géré par OVH | désactivé ; à réactiver depuis Cloudflare, avec un nouveau DS à déclarer chez OVH |
+
+#### Reste à faire
+
+- [ ] **Redirect Rule apex** — phase `http_request_dynamic_redirect`, 301
+      `tagepocket.fr` → `https://www.tagepocket.fr` + chemin et query. Sans elle,
+      l'`AAAA 100::` renvoie **522** : l'apex est cassé.
+- [ ] **Email Obfuscation et Server Side Exclude à `off`** — Scrape Shield réécrit
+      les `mailto:` en `/cdn-cgi/l/email-protection` et injecte un script. Le lien
+      devient mort sans JavaScript et le HTML servi ne correspond plus au build.
+- [ ] **Bascule du Worker** — bloc `routes` dans `wrangler.jsonc`, `workers_dev` à
+      `false`, `npm run deploy`. Puis supprimer le projet Pages.
+- [ ] **DNSSEC** — réactiver côté Cloudflare, déclarer le nouveau DS chez OVH.
 
 ### Déploiement continu — aujourd'hui, par Pages
 
-Tant que la zone DNS n'est pas chez Cloudflare, la production est servie par le
-projet **Pages** `tagepocket-landing`, qui construit le site Astro à chaque push
-sur `main` depuis `BNJ02/tagepocket-landing` :
+En attendant la bascule du Worker, la production est servie par le projet **Pages**
+`tagepocket-landing`, qui construit le site Astro à chaque push sur `main` depuis
+`BNJ02/tagepocket-landing` :
 
 | Réglage | Valeur |
 |---|---|
@@ -113,13 +131,11 @@ Ces réglages ont été posés le 22/09/2026. **Avant cela, la commande de build
 plus depuis son passage dans `public/`, et cassé le site.
 
 Le Worker reste déployé en parallèle sur son sous-domaine `workers.dev`, prêt à
-reprendre la production dès que la zone sera transférée. `npm run deploy` le met
-à jour sans toucher à Pages.
+reprendre la production. `npm run deploy` le met à jour sans toucher à Pages.
 
 Note : Pages ignore `.assetsignore`, qui est un mécanisme propre aux Workers, et
 sert donc `/.assetsignore`. Sans conséquence — le fichier ne contient que des
-noms de fichiers — et le problème disparaît à la migration.
-
+noms de fichiers — et le problème disparaît à la bascule.
 ## Arborescence
 
 | Chemin | Rôle |

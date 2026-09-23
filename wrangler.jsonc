@@ -36,12 +36,19 @@
   // Journaux et traces consultables via `wrangler tail` et le dashboard.
   "observability": { "enabled": true },
 
-  // BLOQUANT : un custom domain de Worker exige que la zone soit hébergée chez
-  // Cloudflare — l'API crée l'enregistrement DNS elle-même et échoue sinon
-  // (« Can't infer zone from route », code 10082). Or tagepocket.fr est délégué
-  // à OVHcloud (ns106.ovh.net) et le compte Cloudflare ne contient aucune zone.
-  // Les custom domains de Pages, eux, se contentent d'un CNAME depuis n'importe
-  // quel hébergeur DNS : c'est pour ça que le site actuel fonctionne.
-  // Tant que la zone n'est pas transférée chez Cloudflare, pas de `routes` ici.
+  // La zone tagepocket.fr est hébergée chez Cloudflare depuis le 23/09/2026
+  // (nia/thaddeus.ns.cloudflare.com), condition nécessaire au custom domain :
+  // l'API crée l'enregistrement DNS elle-même et échouait auparavant avec
+  // « Can't infer zone from route », code 10082. Les custom domains de Pages,
+  // eux, se contentent d'un CNAME depuis n'importe quel hébergeur DNS — c'est
+  // cette asymétrie qui a mis le site hors ligne le 22/09/2026.
+  //
+  // `routes` reste commenté tant que la bascule n'est pas décidée : www est
+  // aujourd'hui servi par le projet Pages, et créer le custom domain du Worker
+  // écrase l'enregistrement DNS correspondant. Pour basculer : décommenter,
+  // passer `workers_dev` à false, `npm run deploy`, vérifier, puis supprimer le
+  // projet Pages.
+  //
+  // "routes": [{ "pattern": "www.tagepocket.fr", "custom_domain": true }],
   "workers_dev": true
 }
