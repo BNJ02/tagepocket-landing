@@ -1,57 +1,58 @@
 ---
-// Page 404 — première page réellement générée par Astro, et à ce titre le
-// témoin de build du socle (SCRUM-194). Elle s'appuie encore sur le
-// public/style.css hérité : le design system « La Clairière » arrive en
-// SCRUM-195, la mise en page commune en SCRUM-196.
-// Cloudflare Pages sert automatiquement dist/404.html sur les chemins inconnus.
-const title = 'Page introuvable — TagePocket';
+// Page 404 — première page portée sur le design system (SCRUM-195).
+// Workers la sert avec un vrai statut 404 grâce à
+// `assets.not_found_handling: "404-page"` dans wrangler.jsonc.
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL } from '../lib/nav';
 ---
 
-<!doctype html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="robots" content="noindex" />
-    <link rel="stylesheet" href="/style.css" />
-  </head>
-  <body>
-    <header class="site-head">
-      <div class="wrap">
-        <a class="brand" href="/"><span class="dot">T</span> TagePocket</a>
-        <nav>
-          <a href="/support.html">Support</a>
-        </nav>
-      </div>
-    </header>
+<Base
+  title="Page introuvable — TagePocket"
+  description="Cette page n'existe pas ou a été déplacée."
+  noindex
+>
+  <div class="page notfound">
+    <img src="/brand/gaston-inquiet.svg" alt="" width="180" height="180" />
+    <p class="notfound__code num">404</p>
+    <h1>Cette page n'existe pas</h1>
+    <p>
+      Le lien est peut-être périmé, ou l'adresse comporte une faute de frappe.
+      Reviens à l'accueil — et écris-nous si tu penses que c'est un bug de notre
+      côté.
+    </p>
+    <p class="notfound__links">
+      <a href="/">Retour à l'accueil</a> · <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+    </p>
+  </div>
+</Base>
 
-    <main>
-      <div class="wrap">
-        <h1>Cette page n'existe pas</h1>
-        <p class="updated">Erreur 404</p>
-        <div class="card">
-          <p>
-            Le lien est peut-être périmé, ou l'adresse comporte une faute de frappe.
-            Reviens à l'accueil, ou écris-nous si tu penses que c'est un bug de notre côté.
-          </p>
-          <p>
-            <a href="/">Retour à l'accueil</a> ·
-            <a href="mailto:support@tagepocket.fr">support@tagepocket.fr</a>
-          </p>
-        </div>
-      </div>
-    </main>
+<style>
+  .notfound {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-block: var(--space-16);
+  }
 
-    <footer class="site-foot">
-      <div class="wrap">
-        <div>
-          <a href="/confidentialite.html">Confidentialité</a>
-          <a href="/mentions-legales.html">Mentions légales</a>
-          <a href="/support.html">Support</a>
-        </div>
-        <div>© 2026 TagePocket · <a href="mailto:contact@tagepocket.fr">contact@tagepocket.fr</a></div>
-      </div>
-    </footer>
-  </body>
-</html>
+  .notfound p {
+    max-width: 46ch;
+  }
+
+  .notfound__code {
+    margin-top: var(--space-6);
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    letter-spacing: 0.12em;
+  }
+
+  .notfound h1 {
+    margin-block: var(--space-2) var(--space-4);
+    font-size: var(--text-2xl);
+  }
+
+  .notfound__links {
+    margin-top: var(--space-6);
+    color: var(--ink-3);
+  }
+</style>

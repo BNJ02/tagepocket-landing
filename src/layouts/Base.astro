@@ -1,0 +1,59 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Tenir la page hors des moteurs — /compte/*, pages de contrôle. */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+
+/* Astro.site vient de `site` dans astro.config.mjs. L'URL canonique est
+   absolue et sans barre finale, cohérente avec `trailingSlash: 'never'`. */
+const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, '') || Astro.site!.href;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/brand/mark-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/brand/mark-192.png" />
+    <meta name="theme-color" content="#eef1ea" />
+
+    {/* Seule la graisse 400 est préchargée : c'est celle du premier
+        paragraphe visible. Précharger les quatre ferait entrer 56 ko en
+        concurrence avec le HTML sur le chemin critique. */}
+    <link
+      rel="preload"
+      href="/fonts/hanken-grotesk-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <slot name="head" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <Header />
+    <main id="contenu" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

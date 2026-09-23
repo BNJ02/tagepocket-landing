@@ -1,0 +1,75 @@
+---
+import Logo from './Logo.astro';
+import { LEGAL_NAV, CONTACT_EMAIL, live } from '../lib/nav';
+
+const links = live(LEGAL_NAV);
+const year = new Date().getFullYear();
+---
+
+<footer class="ftr">
+  <div class="page ftr__in">
+    <div class="ftr__brand">
+      <Logo size={26} />
+      <p class="ftr__tag">Ta préparation au TAGE MAGE, dans la poche.</p>
+    </div>
+
+    <nav class="ftr__nav" aria-label="Informations légales">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+    </nav>
+
+    <p class="ftr__copy">© {year} TagePocket</p>
+  </div>
+</footer>
+
+<style>
+  .ftr {
+    margin-top: var(--space-24);
+    border-top: 1px solid var(--bois-300);
+    background: var(--bois-100);
+  }
+
+  .ftr__in {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-8);
+    padding-block: var(--space-12);
+  }
+
+  .ftr__brand {
+    flex: 1 1 16rem;
+  }
+
+  .ftr__tag {
+    margin-top: var(--space-3);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  .ftr__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .ftr__nav a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+
+  .ftr__nav a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .ftr__copy {
+    flex-basis: 100%;
+    margin: 0;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--bois-300);
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+  }
+</style>

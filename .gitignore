@@ -13,6 +13,9 @@ dist/
 .astro/
 node_modules/
 
+# État local de `wrangler dev` (miniflare : KV, D1, R2, cache simulés)
+.wrangler/
+
 # Variables d'environnement (PUBLIC_SUPABASE_* — jamais de clé Stripe ici)
 .env
 .env.*

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-label="Gaston le castor, endormi">
+  <title>Gaston — endormi</title>
+  <desc>Arcs vers le bas, oreilles qui retombent, tête penchée, deux « z ».</desc>
+  <g transform="rotate(7 256 260)">
+    <!-- oreilles, derrière la tête -->
+    <circle cx="188" cy="181" r="33" fill="#71492D"/>
+    <circle cx="324" cy="181" r="33" fill="#71492D"/>
+    <!-- tête -->
+    <path d="M256,146 C316,146 362,182 362,244 C362,302 316,346 256,346 C196,346 150,302 150,244 C150,182 196,146 256,146 Z" fill="#8B5E3C"/>
+    <!-- museau -->
+    <ellipse cx="256" cy="308" rx="66" ry="38" fill="#EFE3CF"/>
+    <!-- truffe -->
+    <path d="M256,268 C266,268 273,275 273,283 C273,292 265,298 256,298
+             C247,298 239,292 239,283 C239,275 246,268 256,268 Z" fill="#3F2716"/>
+    <!-- incisives : le seul détail qui dit « castor » -->
+    <rect x="242" y="312" width="28" height="58" rx="8" fill="#FFFDF7"/>
+    <rect x="255" y="318" width="2" height="46" fill="#E3D7C0"/>
+    
+    <path d="M201,237 Q214,249 227,237"
+         fill="none" stroke="#3F2716" stroke-width="8" stroke-linecap="round"/><path d="M285,237 Q298,249 311,237"
+         fill="none" stroke="#3F2716" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text x="352" y="176" font-family="Menlo, monospace" font-size="42" font-weight="700"
+                   fill="#8A9C95">z</text>
+             <text x="392" y="140" font-family="Menlo, monospace" font-size="28" font-weight="700"
+                   fill="#8A9C95" opacity=".7">z</text>
+</svg>

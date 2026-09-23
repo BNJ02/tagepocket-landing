@@ -149,14 +149,95 @@ et sert de retour arrière. Ses déploiements automatiques sont **coupés**
 deux constructions. Retour arrière : retirer le custom domain du Worker, puis
 réattacher `www.tagepocket.fr` au projet Pages — deux minutes. À supprimer une
 fois le Worker éprouvé.
+
+## Design system — « La Clairière »
+
+`src/styles/tokens.css` est une **copie annotée et datée** du `:root` de
+`~/memora_tage_mage/src/global.css`. L'app fait foi : à chaque divergence, c'est
+le site qui est faux. L'ancien `style.css` avait dérivé (`--ink-2` à `#56655d`
+contre `#5c7460`, fond à `#f3f6f4` contre `#eef1ea`), d'où la copie explicite
+plutôt qu'un import inter-dépôts — qui coupleraient le build d'un projet Expo à
+celui d'un projet Astro pour un bénéfice nul.
+
+Quatre familles, un métier par famille. La question au moment de coder est
+« qu'est-ce que cet élément fait ? », jamais « quelle couleur je mets ? ».
+
+| Famille | Métier | Piège |
+|---|---|---|
+| **Menthe** `--accent*` | agit — le CTA, et rien d'autre | `--accent` est une **surface** à 2,2:1. Jamais de texte dessus. Seul `--accent-strong` (6,4:1) est lisible : liens et prix. |
+| **Bois** `--bois-*` | porte et sépare | jamais un état, jamais une action. Base des boutons **neutres**. |
+| **Eau** `--eau-*` | se remplit | jauges et barres. Jamais un bouton. |
+| **Mousse** `--app-bg`, `--ink*` | se tait | aucun gris pur : un `#9e9e9e` a l'air tombé d'une autre application. |
+
+Règle transverse : **500 remplit, 700 écrit**.
+
+Pas de mode sombre, pas de `.theme-blue` : l'app est en
+`userInterfaceStyle: light` et les thèmes de « mondes » n'existent que dans
+l'app. Régression volontaire, au nom de la cohérence.
+
+`/design` est une **page de contrôle temporaire** — palette, graisses, éléments,
+Gaston — en `noindex` et hors sitemap. À supprimer en fin de lot 1.
+
+### Polices
+
+Hanken Grotesk 400/600/800 et JetBrains Mono 600, sous-ensemble latin,
+auto-hébergées dans `public/fonts/`. 72 ko au total.
+
+Elles sont **copiées** depuis `@fontsource/*`, dépendance de développement : le
+paquet documente la provenance et permet de recopier, mais rien n'en dépend au
+build. Pour changer de graisse :
+
+```bash
+cp node_modules/@fontsource/hanken-grotesk/files/hanken-grotesk-latin-<poids>-normal.woff2 public/fonts/
+```
+
+Pas de Google Fonts : une requête tierce en moins, `font-src 'self'` suffit dans
+la CSP de SCRUM-198, et l'exemption cookies reste intacte.
+
+L'app charge huit graisses pour une interface dense ; le site en prend quatre.
+Chaque graisse coûte ~14 ko sur le chemin critique. Seule la 400 est préchargée :
+c'est celle du premier paragraphe visible.
+
+> `build.inlineStylesheets: 'never'` dans `astro.config.mjs` : sans cela Astro
+> intègre les petites feuilles de style dans un `<style>`, ce qui imposerait
+> `style-src 'unsafe-inline'` — précisément ce que SCRUM-198 doit éviter.
+
+### Marque
+
+La marque simplifiée « poche + dents » (`src/components/Logo.astro`, SVG inline
+de 500 octets) et non le logo complet : sous 48 px, Gaston devient illisible.
+Le néon `#2AFFA6` et les incisives blanches sont dessinés pour le fond d'encre
+`#02110D` — **la pastille sombre n'est pas une décoration**, c'est ce qui rend
+la marque lisible sur fond clair.
+
+> ⚠️ **`public/logo.png` est porteur.** Le template d'e-mail transactionnel
+> Supabase le référence en URL absolue `https://www.tagepocket.fr/logo.png`
+> (commit `0e1cf57`). Le déplacer ou le renommer casse l'image des mails de
+> confirmation de compte. Il n'est référencé par aucune page.
+
+Les dérivés ne se retouchent jamais à la main : tout se régénère par
+`python3 scripts/gen-brand-assets.py` dans le dépôt de l'app, depuis
+`logo-source.png`.
+
+### Navigation
+
+`src/lib/nav.ts` porte les liens de l'en-tête et du pied de page, chacun avec un
+drapeau `ready`. Une page pas encore écrite **n'est pas rendue** plutôt que liée
+vers un 404 : le socle part en production avant les pages, et un lien mort en
+ligne est indexé, cliqué, et donne l'impression d'un site cassé. Passer `ready` à
+`true` dans le commit qui livre la page.
+
 ## Arborescence
 
 | Chemin | Rôle |
 |---|---|
-| `src/pages/` | routes (`404.astro` pour l'instant) |
-| `src/layouts/` | mises en page communes — SCRUM-196 |
-| `src/components/` | composants `.astro` — SCRUM-196 |
-| `src/styles/` | design system « La Clairière » — SCRUM-195 |
+| `src/pages/` | routes (`404.astro`, `design.astro` temporaire) |
+| `src/layouts/` | `Base.astro` — head, polices, en-tête, pied de page |
+| `src/components/` | `Logo`, `Header`, `Footer` ; le reste en SCRUM-196 |
+| `src/styles/` | design system « La Clairière » |
+| `src/lib/` | `nav.ts` ; client Supabase et facturation aux lots 2 et 4 |
+| `public/fonts/` | Hanken Grotesk et JetBrains Mono, `.woff2` latin |
+| `public/brand/` | favicon, icônes, les quatre Gaston |
 | `src/lib/` | client Supabase, appels de facturation, garde de session — lots 2 et 4 |
 | `public/` | servi verbatim ; contient encore les 4 pages HTML héritées |
 | `public/.well-known/` | universal links (AASA + assetlinks) — SCRUM-217 |

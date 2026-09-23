@@ -1,0 +1,92 @@
+---
+import Logo from './Logo.astro';
+import { MAIN_NAV, HEADER_CTA, live } from '../lib/nav';
+
+const links = live(MAIN_NAV);
+const cta = HEADER_CTA.ready ? HEADER_CTA : null;
+const path = Astro.url.pathname;
+---
+
+<header class="hdr">
+  <div class="page hdr__in">
+    <a href="/" class="hdr__home" aria-label="TagePocket — accueil">
+      <Logo size={30} />
+    </a>
+
+    {
+      (links.length > 0 || cta) && (
+        <nav class="hdr__nav" aria-label="Navigation principale">
+          {links.map((l) => (
+            <a href={l.href} aria-current={path === l.href ? 'page' : undefined}>
+              {l.label}
+            </a>
+          ))}
+          {cta && (
+            <a href={cta.href} class="hdr__cta">
+              {cta.label}
+            </a>
+          )}
+        </nav>
+      )
+    }
+  </div>
+</header>
+
+<style>
+  .hdr {
+    border-bottom: 1px solid var(--bois-300);
+    background: var(--app-bg);
+  }
+
+  .hdr__in {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    min-height: 64px;
+  }
+
+  .hdr__home {
+    text-decoration: none;
+  }
+
+  .hdr__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .hdr__nav a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+
+  .hdr__nav a:hover {
+    color: var(--ink);
+  }
+
+  .hdr__nav a[aria-current='page'] {
+    color: var(--ink);
+  }
+
+  /* Le seul emploi de la menthe pleine : agir. Le texte est posé en
+     --accent-ink et non en blanc — la menthe 500 est une surface à 2,2:1. */
+  .hdr__cta {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    color: var(--accent-ink) !important;
+  }
+
+  .hdr__cta:hover {
+    background: var(--accent-press);
+  }
+
+  @media (max-width: 30rem) {
+    .hdr__nav {
+      gap: var(--space-4);
+    }
+  }
+</style>

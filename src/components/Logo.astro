@@ -1,0 +1,66 @@
+---
+/**
+ * Marque TagePocket : la pastille « poche + dents » suivie du mot-symbole.
+ *
+ * Le SVG est inline plutôt que dans un <img> pour trois raisons : il pèse
+ * 500 octets, il évite une requête, et il reste net à toutes les densités.
+ * Le `logo.png` complet de l'app n'est pas utilisable ici — sous 48 px Gaston
+ * devient illisible, c'est précisément pourquoi la marque simplifiée existe
+ * (voir assets/brand/README.md du dépôt de l'app).
+ *
+ * Le néon #2AFFA6 et les incisives blanches sont dessinés pour le fond de
+ * marque #02110D : la pastille sombre n'est pas une décoration, elle est ce
+ * qui rend la marque lisible sur un fond clair.
+ */
+interface Props {
+  /** Hauteur de la pastille, en pixels. Le mot-symbole suit. */
+  size?: number;
+  /** Masquer le mot-symbole — pour les contextes très étroits. */
+  markOnly?: boolean;
+}
+
+const { size = 32, markOnly = false } = Astro.props;
+---
+
+<span class="logo" style={`--mark-size: ${size}px`}>
+  <svg
+    class="logo__mark"
+    viewBox="0 0 512 512"
+    width={size}
+    height={size}
+    aria-hidden="true"
+    focusable="false"
+  >
+    <rect width="512" height="512" rx="104" fill="var(--encre)"></rect>
+    <path
+      d="M 86.5,121.1 A 20.8,20.8 0 0 1 107.3,100.3
+         H 404.7 A 20.8,20.8 0 0 1 425.5,121.1
+         V 282.5 A 169.5,129.2 0 0 1 86.5,282.5 Z"
+      fill="none"
+      stroke="var(--neon)"
+      stroke-width="39.8"
+      stroke-linejoin="round"></path>
+    <rect x="208.9" y="185.8" width="43.6" height="76.2" rx="14.5" fill="#fff"></rect>
+    <rect x="259.5" y="185.8" width="43.6" height="76.2" rx="14.5" fill="#fff"></rect>
+  </svg>
+  {markOnly ? <span class="visually-hidden">TagePocket</span> : <span class="logo__word">TagePocket</span>}
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .logo__mark {
+    flex: none;
+  }
+
+  .logo__word {
+    font-weight: 800;
+    font-size: calc(var(--mark-size) * 0.62);
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+</style>

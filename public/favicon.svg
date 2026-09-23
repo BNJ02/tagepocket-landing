@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>TagePocket</title>
+  <!-- Marque simplifiée « poche + dents » reprise de memora_tage_mage/assets/brand/mark.svg.
+       Le pastille sombre est ajoutée ici : le néon #2AFFA6 et les incisives blanches
+       sont dessinés pour le fond de marque #02110D et disparaissent sur un onglet clair. -->
+  <rect width="512" height="512" rx="104" fill="#02110D"/>
+  <path d="M 86.5,121.1 A 20.8,20.8 0 0 1 107.3,100.3
+           H 404.7 A 20.8,20.8 0 0 1 425.5,121.1
+           V 282.5 A 169.5,129.2 0 0 1 86.5,282.5 Z"
+        fill="none" stroke="#2AFFA6" stroke-width="39.8" stroke-linejoin="round"/>
+  <rect x="208.9" y="185.8" width="43.6" height="76.2" rx="14.5" fill="#FFFFFF"/>
+  <rect x="259.5" y="185.8" width="43.6" height="76.2" rx="14.5" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-label="Gaston le castor, fier">
+  <title>Gaston — fier</title>
+  <desc>Paupières à mi-course inclinées vers l’extérieur, menton relevé, une étincelle.</desc>
+  <g transform="rotate(-4 256 260)">
+    <!-- oreilles, derrière la tête -->
+    <circle cx="188" cy="170" r="33" fill="#71492D"/>
+    <circle cx="324" cy="170" r="33" fill="#71492D"/>
+    <!-- tête -->
+    <path d="M256,146 C316,146 362,182 362,244 C362,302 316,346 256,346 C196,346 150,302 150,244 C150,182 196,146 256,146 Z" fill="#8B5E3C"/>
+    <!-- museau -->
+    <ellipse cx="256" cy="308" rx="66" ry="38" fill="#EFE3CF"/>
+    <!-- truffe -->
+    <path d="M256,268 C266,268 273,275 273,283 C273,292 265,298 256,298
+             C247,298 239,292 239,283 C239,275 246,268 256,268 Z" fill="#3F2716"/>
+    <!-- incisives : le seul détail qui dit « castor » -->
+    <rect x="242" y="312" width="28" height="58" rx="8" fill="#FFFDF7"/>
+    <rect x="255" y="318" width="2" height="46" fill="#E3D7C0"/>
+    
+    <path d="M199,245 Q212,234 229,234"
+                 fill="none" stroke="#3F2716" stroke-width="9" stroke-linecap="round"/>
+           <path d="M313,245 Q300,234 283,234"
+                 fill="none" stroke="#3F2716" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <path d="M366,168 L374,190 L396,198 L374,206 L366,228 L358,206 L336,198 L358,190 Z"
+                   fill="#E9B949"/>
+             <path d="M404,214 L408,226 L420,230 L408,234 L404,246 L400,234 L388,230 L400,226 Z"
+                   fill="#E9B949" opacity=".7"/>
+</svg>

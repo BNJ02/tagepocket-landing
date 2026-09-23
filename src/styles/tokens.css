@@ -1,0 +1,146 @@
+/* ————————————————————————————————————————————————————————————————————————
+   « La Clairière » — tokens du site tagepocket.fr (SCRUM-195)
+
+   COPIE ANNOTÉE de `~/memora_tage_mage/src/global.css`. L'app fait foi : à
+   chaque divergence constatée, c'est ce fichier qui est faux. Le `style.css`
+   de l'ancien site avait dérivé (--ink-2 à #56655d contre #5c7460, fond à
+   #f3f6f4 contre #eef1ea) — voilà pourquoi la copie est explicite et datée
+   plutôt qu'importée : un import inter-dépôts créerait un couplage de build
+   entre un projet Expo et un projet Astro, pour un bénéfice nul.
+
+   Relevé le 23/09/2026.
+
+   ——— Quatre familles, un métier par famille ———
+   La question au moment de coder est « qu'est-ce que cet élément fait ? »,
+   jamais « quelle couleur je mets ? ».
+
+     BOIS   porte et sépare — jamais un état, jamais une action  → --bois-*
+     EAU    se remplit — tout ce qui monte, jamais ce qu'on presse → --eau-*
+     MOUSSE se tait — les neutres, tous biaisés vert              → --app-bg, --ink*
+     MENTHE agit — le CTA, rien d'autre                           → --accent*
+
+   Règle transverse : **500 remplit, 700 écrit**. Les tons 500 sont des
+   surfaces ; dès qu'un texte se pose dessus ou à côté, on descend d'au moins
+   deux crans.
+
+   ——— Ce que le site ne reprend pas, et pourquoi ———
+
+   · `.theme-blue` et `.theme-green` — les thèmes de « mondes » n'existent que
+     dans l'app, où ils colorent les six sous-épreuves. Le site n'a pas de
+     mondes ; un sélecteur de thème inutilisé finirait par être branché à
+     tort.
+   · Le mode sombre — l'app est en `userInterfaceStyle: light`. Régression
+     volontaire, au nom de la cohérence : deux identités visuelles valent
+     moins qu'une seule tenue.
+   ———————————————————————————————————————————————————————————————————————— */
+
+:root {
+  /* ——— MENTHE — agit. Le CTA, et rien d'autre ———
+     crans : 100 = --accent-soft · 500 = --accent · 600 = --accent-press
+             800 = --accent-strong · 900 ≈ --accent-ink */
+  --accent: #15c585; /* menthe 500 — surface seulement, 2.2:1 sur blanc */
+  --accent-press: #0ea271; /* menthe 600 — état pressé, 3.3:1 : jamais de texte */
+  --accent-strong: #0a6d4a; /* menthe 800 — seule variante lisible en texte, 6.4:1 */
+  --accent-soft: #d6f7ec;
+  --accent-ink: #04261b;
+
+  /* ——— BOIS — porte et sépare. Ne dit jamais un état ni une action ——— */
+  --bois-100: #f8f3ec; /* encart de lecture, fond de tuile */
+  --bois-200: #ede4d6; /* piste de bouton pressé */
+  --bois-300: #ded6c6; /* veine — lignes, séparateurs, tranche des cartes */
+  --bois-500: #c19a6b; /* bûche */
+  --bois-700: #a67c52; /* base des boutons NEUTRES, ombre portée */
+  --bois-900: #6b452b; /* texte sur bois clair — 8.4:1 */
+
+  /* ——— EAU — se remplit. Tout ce qui monte, jamais ce qu'on presse ———
+     Sur le site, l'eau n'a qu'un emploi prévu : la jauge « essai — jour 3
+     sur 14 » de /compte (SCRUM-203). Jamais un bouton. */
+  --eau-100: #eaf4f7;
+  --eau-300: #bfe0eb; /* portion à venir d'une barre */
+  --eau-500: #3aa8c9; /* remplissage. 2.8:1 : jamais de texte */
+  --eau-700: #1c6f8c; /* texte sur eau claire — 5.7:1 */
+  --eau-900: #12414f;
+
+  /* Vert profond — bandeaux et sections pleines */
+  --stage-1: #0f4d39;
+  --stage-2: #06231a;
+  --brand: #0c3a2c;
+  --brand-2: #0f4836;
+  --brand-ink: #e8fff4;
+
+  /* ——— MOUSSE — se tait. Les neutres, tous biaisés vert, aucun gris pur ———
+     Un #9e9e9e se voit immédiatement : il a l'air d'être tombé d'une autre
+     application. */
+  --app-bg: #eef1ea; /* mousse 100 — la berge, fond de page */
+  --app-card: #ffffff; /* mousse 000 — le blanc des cartes */
+  --ink: #14241d; /* mousse 900 — texte principal, 14.2:1 */
+  --ink-2: #5c7460; /* mousse 700 — texte secondaire, 5.1:1 */
+  --ink-3: #6f8a72; /* mousse 600 — étiquettes, 3.8:1 : réservé au gros texte */
+  --ink-4: #a8bba7; /* mousse 400 — icône désactivée. Jamais de texte. */
+  --line: rgba(18, 33, 27, 0.08);
+  --line-2: rgba(18, 33, 27, 0.14);
+  --track: #dfe5dc; /* mousse 200 — pierre : piste de barre */
+
+  --shadow: rgba(14, 162, 113, 0.22);
+
+  /* Feedback */
+  --ok: #18a957;
+  --ok-soft: rgba(24, 169, 87, 0.12);
+  --ok-ink: #0a5128;
+  --bad: #f0463a;
+  --bad-soft: rgba(240, 70, 58, 0.1);
+  --bad-ink: #8f1c14;
+
+  /* Pops ludiques. --gold porte le badge premium. */
+  --energy: #ff7a3d;
+  --gold: #f0b429;
+  --gold-press: #c98a12;
+
+  /* ——— Identité de marque « Encre & Néon » (SCRUM-97) ———
+     Distincte de « La Clairière » : c'est l'habillage du logo, pas celui de
+     l'interface. Le néon n'est lisible que sur l'encre — ne jamais poser
+     --neon sur un fond clair. */
+  --encre: #02110d;
+  --neon: #2affa6;
+
+  /* ——— Typographie ———
+     Hanken Grotesk et JetBrains Mono sont les polices de l'app
+     (src/app/_layout.tsx). Le site les auto-héberge — voir base.css. */
+  --font-sans: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Échelle typographique fluide. Le second terme suit la largeur de la
+     fenêtre, le troisième plafonne : pas de media query pour le corps de
+     texte. */
+  --text-xs: 0.8125rem; /* 13px — mentions légales, notes de bas de page */
+  --text-sm: 0.9375rem; /* 15px — texte secondaire */
+  --text-base: 1.0625rem; /* 17px — corps. Plus grand que le 16px par défaut :
+                             le site est fait pour être lu, pas parcouru. */
+  --text-lg: clamp(1.125rem, 1.05rem + 0.4vw, 1.3125rem);
+  --text-xl: clamp(1.375rem, 1.2rem + 0.9vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.7vw, 2.5rem);
+  --text-3xl: clamp(2.25rem, 1.6rem + 3.2vw, 3.75rem);
+
+  /* Rythme vertical. Multiples de 4, comme l'app. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  /* Rayons — repris des cartes de l'app */
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  /* Largeurs de lecture. --measure plafonne les paragraphes autour de 70
+     caractères : au-delà, l'œil perd la ligne au retour. */
+  --measure: 68ch;
+  --page: 1120px;
+}

@@ -1,0 +1,236 @@
+/* ————————————————————————————————————————————————————————————————————————
+   Socle : polices auto-hébergées, remise à zéro, typographie, états de focus.
+   Les valeurs viennent toutes de tokens.css — aucune couleur en dur ici.
+   ———————————————————————————————————————————————————————————————————————— */
+
+/* ——— Polices ———
+   Auto-hébergées, sous-ensemble latin, copiées depuis @fontsource (dépendance
+   de développement) vers public/fonts/. Pas de Google Fonts : une requête
+   tierce en moins, une CSP stricte possible sans `font-src` externe, et
+   l'exemption cookies préservée — voir le README.
+
+   L'app charge huit graisses (Hanken 400/500/600/700/800, Mono 500/600/700)
+   pour une interface dense. Le site en prend quatre : corps, demi-gras,
+   titrage, et un mono pour les chiffres. Chaque graisse coûte ~14 ko sur le
+   chemin critique.
+
+   `font-display: swap` : le texte s'affiche immédiatement dans la police
+   système, puis bascule. Jamais de page blanche en attendant une police. */
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/hanken-grotesk-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/hanken-grotesk-latin-800-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ——— Remise à zéro ——— */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  /* Pas de `scroll-behavior: smooth` inconditionnel : le défilement animé
+     provoque des nausées chez les personnes sensibles au mouvement. */
+  -webkit-text-size-adjust: 100%;
+  tab-size: 2;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 400;
+  line-height: 1.6;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* ——— Titres ———
+   800 pour le titrage, 600 pour les intertitres : la 700 de l'app n'est pas
+   chargée ici, inutile de l'appeler. */
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.15;
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+}
+
+h3 {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+h4 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+p {
+  max-width: var(--measure);
+}
+
+strong,
+b {
+  font-weight: 600;
+}
+
+/* ——— Liens ———
+   --accent-strong et non --accent : la menthe 500 est une surface à 2,2:1,
+   illisible en texte. */
+
+a {
+  color: var(--accent-strong);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 0.14em;
+}
+
+/* ——— Focus ———
+   Visible au clavier, discret à la souris. Jamais `outline: none` sans
+   remplacement : c'est la seule indication dont dispose une navigation au
+   clavier. */
+
+:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ——— Chiffres ———
+   JetBrains Mono, tabulaire, pour tout ce qui se compare d'une ligne à
+   l'autre : prix, score sur 600, durées. */
+
+.num {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ——— Utilitaires de mise en page ——— */
+
+.page {
+  width: 100%;
+  max-width: var(--page);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}
+
+/* Lien d'évitement : premier élément focusable, invisible tant qu'il n'a pas
+   le focus. Obligatoire dès qu'une navigation précède le contenu. */
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-4);
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--app-card);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 12px var(--line-2);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
