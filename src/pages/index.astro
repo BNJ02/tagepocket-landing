@@ -41,7 +41,7 @@ const mensuel = FORMULES[0];
 ---
 
 <Base
-  title="TagePocket — le TAGE MAGE, un peu chaque jour"
+  title="TagePocket · le TAGE MAGE, un peu chaque jour"
   description="Prépare le TAGE MAGE en séances courtes : les six sous-épreuves au format réel, la méthode détaillée après chaque question, et un score estimé sur 600 qui s'affine à chaque série."
 >
   <!-- ————————————————— 1. Héros ————————————————— -->
@@ -52,7 +52,7 @@ const mensuel = FORMULES[0];
         <h1>Le TAGE MAGE, un peu chaque jour.</h1>
         <p class="lead">
           Quinze questions, vingt minutes, le format exact de l’épreuve. Tu
-          réponds, tu vois la méthode — pas seulement la bonne lettre — et ce que
+          réponds, tu vois la méthode et pas seulement la bonne lettre, et ce que
           tu rates revient tant que ce n’est pas acquis.
         </p>
         <p class="hero__cta">
@@ -79,19 +79,20 @@ const mensuel = FORMULES[0];
   </section>
 
   <!-- ————————————————— 2. Les six sous-épreuves ————————————————— -->
-  <section class="sec page">
-    <h2>Les six sous-épreuves, au format réel</h2>
-    <p class="sec__lead">
+  <section class="sec page snap">
+    <h2 class="reveal">Les six sous-épreuves, au format réel</h2>
+    <p class="sec__lead reveal">
       Le TAGE MAGE, ce sont six sous-épreuves de quinze questions en vingt
-      minutes, notées <span class="num">+4</span> / <span class="num">−1</span> /
-      <span class="num">0</span>. Chacune porte le nom d’un lieu : tu descends la
-      rivière, de la source au lac.
+      minutes. Une bonne réponse vaut <span class="num">+4</span>, une mauvaise
+      ne coûte rien : depuis 2025, il n’y a plus de point négatif, donc en cas de
+      doute tu réponds quand même. Chacune porte le nom d’un lieu : tu descends
+      la rivière, de la source au lac.
     </p>
 
     <ul class="lieux">
       {
         EPREUVES.map(({ lieu, nom, quoi }, i) => (
-          <li class="lieu">
+          <li class="lieu reveal">
             <span class="lieu__n num">{i + 1}</span>
             <div>
               <h3>{lieu}</h3>
@@ -105,16 +106,16 @@ const mensuel = FORMULES[0];
   </section>
 
   <!-- ————————————————— 3. Le système ————————————————— -->
-  <section class="sec sec--sombre" id="systeme">
+  <section class="sec sec--sombre snap" id="systeme">
     <div class="page">
-      <h2>La méthode, pas seulement la réponse</h2>
-      <p class="sec__lead">
+      <h2 class="reveal">La méthode, pas seulement la réponse</h2>
+      <p class="sec__lead reveal">
         Savoir qu’on s’est trompé ne fait pas progresser. Après chaque question,
-        tu as le raisonnement étape par étape — <em>et</em> pourquoi chacune des
-        quatre autres propositions tombe. C’est là que se gagnent les points.
+        tu as le raisonnement étape par étape, <em>et aussi</em> pourquoi chacune
+        des quatre autres propositions tombe. C’est là que se gagnent les points.
       </p>
 
-      <div class="duo">
+      <div class="duo reveal">
         <Phone
           src="/screens/correction.webp"
           alt="L'écran de correction : la bonne réponse, puis le raisonnement en sept étapes numérotées, dont une par proposition écartée."
@@ -128,7 +129,7 @@ const mensuel = FORMULES[0];
       </div>
 
       <ul class="points">
-        <li>
+        <li class="reveal">
           <h3>Des séries de quinze, pas des questions en vrac</h3>
           <p>
             Une série, c’est un pod : quinze questions d’un seul lieu, chronomètre
@@ -137,7 +138,7 @@ const mensuel = FORMULES[0];
             fois d’affilée.
           </p>
         </li>
-        <li>
+        <li class="reveal">
           <h3>Ce que tu rates revient</h3>
           <p>
             Les questions manquées reviennent en révision, espacées dans le temps,
@@ -145,7 +146,7 @@ const mensuel = FORMULES[0];
             choisis pas quoi réviser : l’app te le dit.
           </p>
         </li>
-        <li>
+        <li class="reveal">
           <h3>Le calcul mental se travaille à part</h3>
           <p>
             Tables, puissances, pourcentages, critères de divisibilité : des
@@ -159,9 +160,9 @@ const mensuel = FORMULES[0];
   </section>
 
   <!-- ————————————————— 4. Progression ————————————————— -->
-  <section class="sec page">
+  <section class="sec page snap">
     <div class="duo duo--texte">
-      <div>
+      <div class="reveal">
         <h2>Un score sur 600 qui s’affine</h2>
         <p>
           À partir de tes réponses, l’app estime ta note sur{' '}
@@ -170,7 +171,7 @@ const mensuel = FORMULES[0];
           bouge, et elle descend aussi.
         </p>
         <p>
-          À côté, de quoi tenir le rythme sur plusieurs mois — un objectif
+          À côté, de quoi tenir le rythme sur plusieurs mois : un objectif
           quotidien, une série de jours à ne pas casser, et un classement
           hebdomadaire entre candidats.
         </p>
@@ -189,19 +190,19 @@ const mensuel = FORMULES[0];
   </section>
 
   <!-- ————————————————— 5. Tarifs résumés ————————————————— -->
-  <section class="sec sec--tarifs" id="tarifs">
+  <section class="sec sec--tarifs snap" id="tarifs">
     <div class="page">
-      <h2>Deux formules, tout est compris</h2>
-      <p class="sec__lead">
+      <h2 class="reveal">Deux formules, tout est compris</h2>
+      <p class="sec__lead reveal">
         Les <span class="num">{ESSAI_JOURS}</span> premiers jours sont gratuits et
-        ne sont pas prélevés. Tu décides ensuite, ou tu arrêtes — rien ne se
+        ne sont pas prélevés. Tu décides ensuite, ou tu arrêtes. Rien ne se
         reconduit dans ton dos.
       </p>
 
       <ul class="formules">
         {
           FORMULES.map((f) => (
-            <li class={`formule${f.avantage ? ' formule--phare' : ''}`}>
+            <li class={`formule reveal${f.avantage ? ' formule--phare' : ''}`}>
               {f.avantage && <p class="formule__ruban">{f.avantage}</p>}
               <h3>{f.nom}</h3>
               <p class="formule__prix">
@@ -234,8 +235,8 @@ const mensuel = FORMULES[0];
   </section>
 
   <!-- ————————————————— 6. FAQ ————————————————— -->
-  <section class="sec page">
-    <h2>Les questions qu’on nous pose</h2>
+  <section class="sec page snap">
+    <h2 class="reveal">Les questions qu’on nous pose</h2>
 
     <Faq questions={FAQ}>
       <Fragment slot="q1">
@@ -270,7 +271,7 @@ const mensuel = FORMULES[0];
       <Fragment slot="q4">
         <p>
           Pas encore : l’app arrive sur iOS et sur Android, et le même abonnement
-          vaudra pour les deux — tu ne paies pas deux fois si tu changes de
+          vaudra pour les deux, donc tu ne paies pas deux fois si tu changes de
           téléphone.
         </p>
       </Fragment>
@@ -278,7 +279,7 @@ const mensuel = FORMULES[0];
       <Fragment slot="q5">
         <p>
           Ton compte, ta progression et ton historique restent. Tu repasses sur la
-          partie gratuite, et tout revient si tu te réabonnes plus tard — tu ne
+          partie gratuite, et tout revient si tu te réabonnes plus tard : tu ne
           recommences pas à zéro.
         </p>
       </Fragment>
@@ -286,8 +287,8 @@ const mensuel = FORMULES[0];
   </section>
 
   <!-- ————————————————— 7. Dernier appel ————————————————— -->
-  <section class="final">
-    <div class="page final__in">
+  <section class="final snap">
+    <div class="page final__in reveal">
       <img src="/brand/gaston-fier.svg" alt="" width="104" height="104" />
       <h2>Le jour J se prépare les autres jours</h2>
       <p>

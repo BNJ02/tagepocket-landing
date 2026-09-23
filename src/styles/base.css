@@ -234,3 +234,64 @@ a:hover {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* ——— Effet aimant entre les sections ———
+   `proximity` et non `mandatory` : le navigateur n'accroche que si le défilement
+   s'arrête déjà près d'un point d'ancrage. Avec `mandatory`, impossible de
+   s'immobiliser au milieu d'une section — la page reprend la main sur le
+   lecteur, et une section plus haute que la fenêtre devient un piège.
+
+   L'ancrage se pose sur `.snap`, pas sur `section` : le pied de page et les
+   blocs courts n'ont rien à accrocher.
+
+   Désactivé si l'utilisateur demande moins de mouvement : sans
+   `scroll-behavior: smooth` (gelé plus haut dans les mêmes conditions),
+   l'accrochage devient un saut sec, plus brutal que pas d'accrochage du tout. */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-snap-type: y proximity;
+  }
+
+  .snap {
+    scroll-snap-align: start;
+    /* La section ne colle pas au bord haut : on lui laisse respirer. */
+    scroll-margin-top: var(--space-4);
+  }
+}
+
+/* ——— Apparition à l'entrée dans la fenêtre ———
+   Animations pilotées par le défilement (`animation-timeline: view()`), donc
+   sans observateur en JavaScript : rien à charger, rien à desserrer dans la
+   CSP, et le navigateur les fait tourner hors du fil principal.
+
+   L'état transparent n'existe QUE dans les keyframes, jamais en style statique :
+   si le navigateur ne connaît pas `view()`, le `@supports` ne s'applique pas et
+   le contenu s'affiche normalement. Un `opacity: 0` posé en dur, lui, rendrait
+   la page blanche sur un navigateur sans la fonctionnalité — c'est la faute
+   classique de ce motif.
+
+   La plage s'arrête à `entry 60%` et non à `cover` : un élément proche du bas de
+   page doit finir son animation AVANT que le défilement ne bute, sinon il reste
+   figé à demi transparent. */
+
+@keyframes apparait {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: apparait linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}

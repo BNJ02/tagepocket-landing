@@ -17,7 +17,7 @@ const { questions } = Astro.props;
 <div class="faq">
   {
     questions.map(({ q, slot }) => (
-      <details class="faq__item">
+      <details class="faq__item reveal">
         <summary>
           <span>{q}</span>
           <svg class="faq__chevron" viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
