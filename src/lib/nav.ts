@@ -57,7 +57,7 @@ export const HEADER_CTA_CONNECTE: NavLink = {
 export const SUPPRESSION_COMPTE: NavLink = {
   href: '/compte/supprimer',
   label: 'Supprimer mon compte',
-  ready: false, // SCRUM-204
+  ready: true,
 };
 
 /**
