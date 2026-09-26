@@ -13,7 +13,7 @@
 import Base from '../layouts/Base.astro';
 import Phone from '../components/Phone.astro';
 import Faq from '../components/Faq.astro';
-import { TARIFS_TARGET, CONTACT_EMAIL } from '../lib/nav';
+import { TARIFS_TARGET, CONTACT_EMAIL, PAIEMENT_OUVERT } from '../lib/nav';
 import { FORMULES, RETRACTATION_JOURS, MENTION_TVA, nombre, parMois } from '../lib/offre';
 
 /* Les six sous-épreuves, dans l'ordre du Parcours de l'app
@@ -267,10 +267,14 @@ const FICHE = {
         à rajouter. L’abonnement se prend ici, sur le site, et se résilie en trois
         clics depuis ton compte.
       </p>
-      <p class="formules__bientot">
-        Le paiement ouvre bientôt. En attendant, écris-nous à{' '}
-        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> pour être prévenu.
-      </p>
+      {
+        !PAIEMENT_OUVERT && (
+          <p class="formules__bientot">
+            Le paiement ouvre bientôt. En attendant, écris-nous à{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> pour être prévenu.
+          </p>
+        )
+      }
     </div>
   </section>
 

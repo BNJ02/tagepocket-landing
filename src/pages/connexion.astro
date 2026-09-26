@@ -184,7 +184,7 @@ import Auth from '../layouts/Auth.astro';
 <script>
   import type { AuthError } from '@supabase/supabase-js';
   import { supabase } from '../lib/supabase';
-  import { destinationSure, messageErreur, urlDeRetour } from '../lib/auth';
+  import { destinationSure, messageErreur, retenirDestination, urlDeRetour } from '../lib/auth';
 
   type Vue = 'connexion' | 'inscription' | 'envoye' | 'code' | 'reinit';
   const VUES: Vue[] = ['connexion', 'inscription', 'envoye', 'code', 'reinit'];
@@ -323,6 +323,7 @@ import Auth from '../layouts/Auth.astro';
       options: { emailRedirectTo: urlDeRetour() },
     });
     if (error) throw error;
+    retenirDestination(destination);
 
     // Confirmation d'e-mail désactivée côté Supabase : la session est déjà là.
     if (data.session) return entrer();

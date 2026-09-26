@@ -35,6 +35,39 @@ export function destinationSure(brut: string | null): string {
   }
 }
 
+/**
+ * Où reprendre après le lien de confirmation d'inscription (SCRUM-209).
+ *
+ * Un visiteur parti de /tarifs doit y revenir une fois son adresse confirmée,
+ * pas tomber sur /compte. La destination n'est PAS mise dans l'adresse de
+ * retour : les Redirect URLs de Supabase sont une liste exacte, et une query
+ * ajoutée la ferait refuser (GoTrue retomberait sur la Site URL). Elle est
+ * gardée dans le localStorage, donc seulement si le lien s'ouvre dans le même
+ * navigateur ; ailleurs, c'est /compte, qui mène aussi au premium.
+ */
+const CLE_APRES_CONFIRMATION = 'tp-apres-confirmation';
+
+export function retenirDestination(destination: string): void {
+  try {
+    if (destination === DESTINATION_PAR_DEFAUT) localStorage.removeItem(CLE_APRES_CONFIRMATION);
+    else localStorage.setItem(CLE_APRES_CONFIRMATION, destination);
+  } catch {
+    /* Stockage bloqué : on retombera sur /compte. */
+  }
+}
+
+/** Lit ET efface la destination retenue ; revalidée comme un `?next=`. */
+export function destinationRetenue(): string {
+  let brut: string | null = null;
+  try {
+    brut = localStorage.getItem(CLE_APRES_CONFIRMATION);
+    localStorage.removeItem(CLE_APRES_CONFIRMATION);
+  } catch {
+    /* idem */
+  }
+  return destinationSure(brut);
+}
+
 /** Adresse de retour du lien de confirmation d'inscription. */
 export const urlDeRetour = (): string => `${window.location.origin}/auth/callback`;
 

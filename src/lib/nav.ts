@@ -18,7 +18,7 @@ export type NavLink = {
 
 /** Barre de navigation principale. */
 export const MAIN_NAV: NavLink[] = [
-  { href: '/tarifs', label: 'Tarifs', ready: false }, // SCRUM-209
+  { href: '/tarifs', label: 'Tarifs', ready: true }, // SCRUM-209
   // Rien à télécharger tant que l'app n'est pas publiée sur les stores : la
   // landing porte un badge « Bientôt sur iOS & Android » à la place.
   { href: '/telecharger', label: "L'app", ready: false },
@@ -28,11 +28,8 @@ export const MAIN_NAV: NavLink[] = [
 /**
  * Cible du bouton « Passer au premium ».
  *
- * `/tarifs` n'existe pas encore (SCRUM-209) et la même discipline que ci-dessus
- * s'applique : on ne lie pas vers une page absente. En attendant, le bouton
- * renvoie à la section tarifs de la page d'accueil, qui porte déjà les deux
- * formules. `/#tarifs` et non `#tarifs` : le lien sert aussi depuis /compte.
- * Basculer sur `/tarifs` dans le commit qui livre la page.
+ * Suit le drapeau de /tarifs : si la page devait être retirée, le bouton
+ * retomberait sur la section tarifs de l'accueil plutôt que sur un 404.
  */
 export const TARIFS_TARGET = MAIN_NAV[0].ready ? '/tarifs' : '/#tarifs';
 
@@ -66,6 +63,22 @@ export const SUPPRESSION_COMPTE: NavLink = {
  * déployée le 26/09/2026). À repasser à `false` si la fonction est retirée.
  */
 export const PORTAIL_PRET = true;
+
+/**
+ * Le paiement est-il ouvert à tous ? (SCRUM-209)
+ *
+ * NON tant que Stripe est en mode test : le site de production parle au Stripe
+ * de TEST, et un paiement avec la carte publique 4242… y rendrait premium pour
+ * de vrai. /tarifs montre alors les formules et « Bientôt disponible ».
+ *
+ * `/tarifs?apercu` affiche quand même les boutons, pour les comptes de test. Ce
+ * n'est PAS la protection : `create-checkout-session` refuse (403
+ * `checkout_closed`) tout compte absent de CHECKOUT_TESTEURS tant que sa clé
+ * Stripe est une clé de test.
+ *
+ * À passer à `true` au lot 6 (SCRUM-216), dans le même geste que la clé live.
+ */
+export const PAIEMENT_OUVERT = false;
 
 /** Liens légaux du pied de page. */
 export const LEGAL_NAV: NavLink[] = [

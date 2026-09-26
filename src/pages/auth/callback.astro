@@ -75,7 +75,7 @@ import Auth from '../../layouts/Auth.astro';
 
 <script>
   import { supabase } from '../../lib/supabase';
-  import { DESTINATION_PAR_DEFAUT, messageErreur } from '../../lib/auth';
+  import { destinationRetenue, messageErreur } from '../../lib/auth';
 
   type Etat = 'attente' | 'ok' | 'expire' | 'vide' | 'erreur';
 
@@ -111,7 +111,7 @@ import Auth from '../../layouts/Auth.astro';
       document.getElementById('erreur-detail')!.textContent = messageErreur(error);
       montrer('erreur');
     } else {
-      document.getElementById('continuer')!.setAttribute('href', DESTINATION_PAR_DEFAUT);
+      document.getElementById('continuer')!.setAttribute('href', destinationRetenue());
       montrer('ok');
     }
   }

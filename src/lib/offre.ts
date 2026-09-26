@@ -8,7 +8,7 @@
  *
  * ⚠️ Ce fichier ne pilote RIEN côté paiement. Les montants réellement débités
  * vivent dans les prix Stripe, résolus côté serveur par
- * `create-checkout-session` à partir du seul champ `plan` (SCRUM-215) : le
+ * `create-checkout-session` à partir du seul champ `plan` (SCRUM-207) : le
  * client n'envoie jamais un montant ni un `priceId`. Toute modification ici doit
  * être faite dans le Dashboard Stripe au même moment.
  */
@@ -44,6 +44,21 @@ export const FORMULES: Formule[] = [
     periode: 'tous les 3 mois',
     avantage: 'Le temps d’une vraie préparation',
   },
+];
+
+/**
+ * Ce que débloque le premium, dans les deux formules (plan, « Premium
+ * débloque »). Affiché sur /tarifs : c'est la description du service exigée
+ * avant la souscription (art. L111-1 C. conso). Toute ligne ajoutée ici doit
+ * exister dans l'app au moment où le paiement ouvre (SCRUM-219, SCRUM-220).
+ */
+export const AVANTAGES_PREMIUM: string[] = [
+  'Vies illimitées : tu t’entraînes autant que tu veux',
+  'Les paliers Expert de chaque lieu',
+  'Les statistiques détaillées, sous-épreuve par sous-épreuve',
+  'La correction et la méthode après chaque question',
+  'Les fiches de révision',
+  'Les modules Sprint et 20 Questions',
 ];
 
 /**
