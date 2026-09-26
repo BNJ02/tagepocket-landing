@@ -372,37 +372,63 @@ import { PORTAIL_PRET, SUPPRESSION_COMPTE, TARIFS_TARGET } from '../../lib/nav';
 
     try {
       let etat = await lireEtat();
-      /* Le webhook arrive en général dans la seconde, parfois un peu après la
-         redirection de Stripe. Trois relectures espacées d'une seconde, pas
-         plus : au-delà, on le dit plutôt que de faire tourner la page. */
-      for (let i = 0; retourPaiement && !abonne(etat) && i < 3; i++) {
-        await attendre(1000);
-        etat = await lireEtat();
-      }
-      // Même attente au retour d'une résiliation : c'est aussi le webhook qui
-      // l'inscrit, jamais cette page.
-      for (let i = 0; retourResiliation && !resilie(etat) && i < 3; i++) {
-        await attendre(1000);
-        etat = await lireEtat();
-      }
+      afficher(etat, false);
 
-      const reussi = retourPaiement && abonne(etat);
-      afficher(etat, reussi);
+      /* Retour de Stripe (paiement ou résiliation). La page n'écrit RIEN : c'est
+         le webhook qui inscrit l'événement, en général dans les secondes qui
+         suivent. En attendant, un bandeau « en cours », et la page se relit
+         d'elle-même toutes les 2 secondes, jusqu'à une minute. L'utilisateur
+         n'a jamais à recharger : un rechargement lui ferait d'ailleurs perdre
+         le bandeau, le paramètre de retour étant déjà retiré de l'URL. */
+      const attente = retourPaiement
+        ? {
+            fait: abonne,
+            enCours: 'Ton paiement est en cours de confirmation…',
+            ok: 'Bienvenue dans le premium ! Ouvre l’app : ton accès y est déjà actif.',
+            tard: 'La confirmation de ton paiement tarde. Elle s’affichera ici d’elle-même ; écris-nous si rien ne bouge d’ici une heure.',
+            fier: true,
+          }
+        : retourResiliation
+          ? {
+              fait: resilie,
+              enCours: 'Ta résiliation est en cours d’enregistrement…',
+              ok: 'Ta résiliation est enregistrée. Aucun autre prélèvement ne sera fait.',
+              tard: 'L’enregistrement de ta résiliation tarde. Elle est bien prise en compte chez notre prestataire de paiement et s’affichera ici d’elle-même.',
+              fier: false,
+            }
+          : null;
 
-      if (retourPaiement) {
+      if (attente) {
         const bandeau = $('[data-bandeau]');
-        bandeau.textContent = reussi
-          ? 'Bienvenue dans le premium ! Ouvre l’app : ton accès y est déjà actif.'
-          : 'Ton paiement est en cours de confirmation. Recharge cette page dans une minute.';
-        bandeau.hidden = false;
-      }
+        const dire = (texte: string) => {
+          bandeau.textContent = texte;
+          bandeau.hidden = false;
+        };
 
-      if (retourResiliation) {
-        const bandeau = $('[data-bandeau]');
-        bandeau.textContent = resilie(etat)
-          ? 'Ta résiliation est enregistrée. Aucun autre prélèvement ne sera fait.'
-          : 'Ta résiliation est en cours d’enregistrement. Recharge cette page dans une minute.';
-        bandeau.hidden = false;
+        if (attente.fait(etat)) {
+          afficher(etat, attente.fier);
+          dire(attente.ok);
+        } else {
+          dire(attente.enCours);
+          devoiler();
+          // Suivi en arrière-plan : la page est déjà affichée pendant ce temps.
+          void (async () => {
+            for (let i = 0; i < 30; i++) {
+              await attendre(2000);
+              try {
+                etat = await lireEtat();
+              } catch {
+                continue; // réseau passager : on retente au tour suivant
+              }
+              if (attente.fait(etat)) {
+                afficher(etat, attente.fier);
+                dire(attente.ok);
+                return;
+              }
+            }
+            dire(attente.tard);
+          })();
+        }
       }
     } catch (e) {
       if (e instanceof Refus401) return sessionPerimee();
