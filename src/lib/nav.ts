@@ -61,11 +61,11 @@ export const SUPPRESSION_COMPTE: NavLink = {
 };
 
 /**
- * Le bouton « Gérer mon abonnement » ouvre le portail client Stripe, par
- * l'Edge Function `create-portal-session` (SCRUM-208). Tant qu'elle n'existe
- * pas, le bouton n'est pas rendu — même discipline que les liens ci-dessus.
+ * Les boutons « Gérer mon abonnement » et « Résilier » ouvrent le portail
+ * client Stripe, par l'Edge Function `create-portal-session` (SCRUM-208,
+ * déployée le 26/09/2026). À repasser à `false` si la fonction est retirée.
  */
-export const PORTAIL_PRET = false;
+export const PORTAIL_PRET = true;
 
 /** Liens légaux du pied de page. */
 export const LEGAL_NAV: NavLink[] = [
