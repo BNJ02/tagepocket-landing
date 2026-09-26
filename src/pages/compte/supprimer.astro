@@ -6,11 +6,9 @@
  * de passe côté serveur, puis purge. Supprimer ici supprime aussi le compte de
  * l'app — c'est le même compte.
  *
- * GARDE-FOU TANT QUE SCRUM-210 N'EST PAS FAIT : la fonction ne sait pas encore
- * annuler l'abonnement Stripe. Supprimer un compte abonné laisserait Stripe
- * prélever un compte qui n'existe plus. La page refuse donc la suppression tant
- * qu'un abonnement vivant n'est pas résilié. Retirer ce blocage dans le commit
- * de SCRUM-210, pas avant.
+ * Abonnement en cours (SCRUM-210) : la fonction l'annule elle-même chez Stripe,
+ * immédiatement, avant toute purge — et refuse de supprimer (503) si Stripe ne
+ * répond pas. La page se contente de prévenir.
  */
 import Account from '../../layouts/Account.astro';
 import { CONTACT_EMAIL } from '../../lib/nav';
@@ -44,12 +42,17 @@ import { CONTACT_EMAIL } from '../../lib/nav';
     </p>
   </section>
 
-  <section class="carte carte--bloque" data-bloque hidden aria-labelledby="bloque-titre">
-    <h2 id="bloque-titre">Résilie d'abord ton abonnement</h2>
+  <section class="carte carte--abonne" data-abonne hidden aria-labelledby="abonne-titre">
+    <h2 id="abonne-titre">Ton abonnement prendra fin tout de suite</h2>
     <p>
-      Ton abonnement est encore en cours. Résilie-le avant de supprimer ton compte,
-      sinon les prélèvements continueraient. Besoin d'aide :
-      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      Ton accès premium court encore. Supprimer ton compte y met fin
+      immédiatement : plus aucun prélèvement, mais pas de remboursement du temps
+      restant.
+    </p>
+    <p>
+      Abonné depuis moins de 14 jours ? Tu as droit au remboursement intégral :
+      écris-nous à <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+      <strong>avant</strong> de supprimer ton compte.
     </p>
   </section>
 
@@ -98,9 +101,8 @@ import { CONTACT_EMAIL } from '../../lib/nav';
     margin-top: var(--space-6);
   }
 
-  .carte--bloque {
-    border-color: var(--bad);
-    box-shadow: 0 4px 0 var(--bad-soft);
+  .carte--abonne p + p {
+    margin-top: var(--space-3);
   }
 
   form {
@@ -185,17 +187,16 @@ import { CONTACT_EMAIL } from '../../lib/nav';
   const bouton = $<HTMLButtonElement>('button[type="submit"]');
   const alerte = $('[data-alerte]');
 
-  /** Un abonnement qui prélève encore, ou prélèvera. */
+  /** Un accès premium en cours, même déjà résilié pour la fin de période. */
   async function abonnementEnCours(): Promise<boolean | 'perimee'> {
     const { data, error, status } = await supabase
       .from('subscriptions')
       .select('status, plan, current_period_end, cancel_at_period_end, trial_end, canceled_at, created_at');
     if (status === 401) return 'perimee';
-    // En cas de doute, on bloque : mieux vaut un « réessaie » qu'un prélèvement
-    // sur un compte supprimé.
+    // En cas de doute, on prévient : l'encart ne bloque rien, il informe.
     if (error) return true;
     const e = etatAbonnement((data ?? []) as LigneAbonnement[]);
-    return e.type === 'impaye' || ((e.type === 'essai' || e.type === 'actif') && !e.resilie);
+    return e.type === 'impaye' || e.type === 'essai' || e.type === 'actif';
   }
 
   async function supprimer(password: string): Promise<void> {
@@ -213,6 +214,13 @@ import { CONTACT_EMAIL } from '../../lib/nav';
         await sessionPerimee();
         throw new Error('Ta session a expiré. Reconnecte-toi.');
       }
+      // Stripe injoignable : l'abonnement n'a pas pu être résilié, donc rien
+      // n'a été supprimé (SCRUM-210).
+      if (reponse.status === 503 && corps.error === 'billing_unavailable') {
+        throw new Error(
+          "Ton abonnement n'a pas pu être résilié, rien n'a été supprimé. Réessaie dans quelques minutes.",
+        );
+      }
       throw new Error("La suppression n'a pas abouti. Réessaie, ou écris-nous.");
     }
     if (error instanceof FunctionsFetchError) throw new Error('Pas de connexion. Vérifie ton réseau.');
@@ -224,12 +232,9 @@ import { CONTACT_EMAIL } from '../../lib/nav';
     if (!session) return;
     $('[data-email]').textContent = session.user.email ?? '';
 
-    const bloque = await abonnementEnCours();
-    if (bloque === 'perimee') return sessionPerimee();
-    if (bloque) {
-      $('[data-bloque]').hidden = false;
-      form.hidden = true;
-    }
+    const abonne = await abonnementEnCours();
+    if (abonne === 'perimee') return sessionPerimee();
+    $('[data-abonne]').hidden = !abonne;
     devoiler();
   }
 
@@ -254,6 +259,7 @@ import { CONTACT_EMAIL } from '../../lib/nav';
       await supabase.auth.signOut({ scope: 'local' });
       form.hidden = true;
       $('[data-avertissement]').hidden = true;
+      $('[data-abonne]').hidden = true;
       $('[data-fait]').hidden = false;
       $('[data-email]').textContent = '';
     } catch (err) {
