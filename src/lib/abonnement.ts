@@ -9,7 +9,15 @@
  * garde-fou anti-webhook-manqué (`schema-billing.sql`). La page appelle les
  * deux ; en cas de désaccord, c'est `is_premium()` qui a raison.
  */
-import { ESSAI_JOURS, FORMULES, type Formule, type PlanId } from './offre.ts';
+import { FORMULES, type Formule, type PlanId } from './offre.ts';
+
+/**
+ * Aucun essai n'est proposé depuis le 26/09/2026 (voir RETRACTATION_JOURS dans
+ * offre.ts) : le statut Stripe `trialing` ne devrait plus apparaître. Le cas
+ * reste géré, pour qu'un abonnement créé à la main avec un essai (geste
+ * commercial, test) s'affiche correctement plutôt que comme « terminé ».
+ */
+const ESSAI_JOURS = 14;
 
 /** Une ligne de `public.subscriptions`, telle que PostgREST la renvoie. */
 export interface LigneAbonnement {

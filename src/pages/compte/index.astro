@@ -196,7 +196,7 @@ import { PORTAIL_PRET, SUPPRESSION_COMPTE, TARIFS_TARGET } from '../../lib/nav';
   import { supabase } from '../../lib/supabase';
   import { devoiler, requireSession, sessionPerimee } from '../../lib/guard';
   import { etatAbonnement, type Etat, type LigneAbonnement } from '../../lib/abonnement';
-  import { ESSAI_JOURS, euros } from '../../lib/offre';
+  import { RETRACTATION_JOURS, euros } from '../../lib/offre';
 
   const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 
@@ -248,7 +248,7 @@ import { PORTAIL_PRET, SUPPRESSION_COMPTE, TARIFS_TARGET } from '../../lib/nav';
         badge.textContent = 'Gratuit';
         titre.textContent = 'Tu utilises la version gratuite';
         texte.textContent =
-          `Le premium débloque les vies illimitées, les paliers Expert, les statistiques détaillées, les corrections et les fiches de révision. ${ESSAI_JOURS} jours d'essai, sans prélèvement avant la fin.`;
+          `Le premium débloque les vies illimitées, les paliers Expert, les statistiques détaillées, les corrections et les fiches de révision. Tu changes d'avis dans les ${RETRACTATION_JOURS} jours ? On te rembourse en entier.`;
         premium.textContent = 'Découvrir le premium';
         premium.hidden = false;
         break;

@@ -62,15 +62,24 @@ export const FORMULES: Formule[] = [
  */
 export const MENTION_TVA = 'TVA non applicable, art. 293 B du CGI';
 
-/** Durée de l'essai, en jours. Voir la note sur la rétractation ci-dessous. */
-export const ESSAI_JOURS = 14;
-
 /**
- * Les 14 jours ne sont pas un chiffre marketing : ils font coïncider la fin de
- * l'essai avec la fin du délai légal de rétractation (art. L221-18 C. conso).
- * Aucun prélèvement n'intervient avant, donc la question « puis-je me faire
- * rembourser ? » ne se pose jamais. Ne pas raccourcir sans relire le lot 5.
+ * Délai de rétractation, en jours, courant à partir de la souscription.
+ *
+ * DÉCISION DU 26/09/2026 : PAS D'ESSAI GRATUIT. Le premier prélèvement a lieu
+ * à la souscription. En contrepartie, toute rétractation dans ce délai est
+ * REMBOURSÉE INTÉGRALEMENT, même si le premium a déjà servi.
+ *
+ * C'est plus favorable que la loi (art. L221-18 et L221-25 C. conso), qui
+ * autoriserait, selon la qualification du premium, soit une renonciation
+ * expresse au droit de rétractation, soit un remboursement au seul prorata non
+ * consommé. On ne demande donc AUCUNE renonciation : pas de case à cocher avant
+ * le paiement, et aucune contestation possible.
+ *
+ * Restent obligatoires : informer du droit avant le paiement (L221-5), fournir
+ * le formulaire type en annexe des CGV, rembourser sous 14 jours par le même
+ * moyen de paiement (L221-24).
  */
+export const RETRACTATION_JOURS = 14;
 
 /** Prix mensualisé d'une formule, pour la comparer aux autres. */
 export const parMois = (f: Formule): number => f.prix / f.mois;

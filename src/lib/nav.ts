@@ -26,7 +26,7 @@ export const MAIN_NAV: NavLink[] = [
 ];
 
 /**
- * Cible du bouton « Commencer l'essai ».
+ * Cible du bouton « Passer au premium ».
  *
  * `/tarifs` n'existe pas encore (SCRUM-209) et la même discipline que ci-dessus
  * s'applique : on ne lie pas vers une page absente. En attendant, le bouton

@@ -14,7 +14,7 @@ import Base from '../layouts/Base.astro';
 import Phone from '../components/Phone.astro';
 import Faq from '../components/Faq.astro';
 import { TARIFS_TARGET, CONTACT_EMAIL } from '../lib/nav';
-import { FORMULES, ESSAI_JOURS, MENTION_TVA, nombre, parMois } from '../lib/offre';
+import { FORMULES, RETRACTATION_JOURS, MENTION_TVA, nombre, parMois } from '../lib/offre';
 
 /* Les six sous-épreuves, dans l'ordre du Parcours de l'app
    (~/memora_tage_mage/src/data/structure.ts). Le lieu est le titre, la
@@ -32,7 +32,7 @@ const EPREUVES = [
 const FAQ = [
   { q: 'Pourquoi l’abonnement se prend-il sur le site et pas dans l’app ?', slot: 'q1' },
   { q: 'Comment j’arrête mon abonnement ?', slot: 'q2' },
-  { q: 'Je suis prélevé pendant l’essai ?', slot: 'q3' },
+  { q: 'Et si ça ne me convient pas ?', slot: 'q3' },
   { q: 'C’est disponible sur iPhone et sur Android ?', slot: 'q4' },
   { q: 'Qu’est-ce que je garde si j’arrête de payer ?', slot: 'q5' },
 ];
@@ -97,12 +97,12 @@ const FICHE = {
         </p>
         <p class="hero__cta">
           <a class="btn btn--accent" href={TARIFS_TARGET}>
-            Commencer l’essai gratuit
+            Passer au premium
           </a>
           <a class="btn btn--neutre" href="#systeme">Voir comment ça marche</a>
         </p>
         <p class="hero__note">
-          <span class="num">{ESSAI_JOURS}</span> jours d’essai · sans engagement · résiliable en trois clics
+          Remboursé si tu changes d’avis sous <span class="num">{RETRACTATION_JOURS}</span> jours · sans engagement · résiliable en trois clics
         </p>
       </div>
 
@@ -234,9 +234,9 @@ const FICHE = {
     <div class="page">
       <h2 class="reveal">Deux formules, tout est compris</h2>
       <p class="sec__lead reveal">
-        Les <span class="num">{ESSAI_JOURS}</span> premiers jours sont gratuits et
-        ne sont pas prélevés. Tu décides ensuite, ou tu arrêtes. Rien ne se
-        reconduit dans ton dos.
+        Tu changes d’avis dans les <span class="num">{RETRACTATION_JOURS}</span>
+        jours ? On te rembourse en entier. Ensuite, tu arrêtes quand tu veux,
+        en trois clics.
       </p>
 
       <ul class="formules">
@@ -302,9 +302,10 @@ const FICHE = {
 
       <Fragment slot="q3">
         <p>
-          Non. Ta carte est enregistrée à l’inscription, mais rien n’est débité
-          pendant les <span class="num">{ESSAI_JOURS}</span> jours. Si tu annules
-          avant la fin, tu n’auras rien payé.
+          Écris-nous à <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> dans
+          les <span class="num">{RETRACTATION_JOURS}</span> jours qui suivent ta
+          souscription : on te rembourse intégralement, même si tu as déjà utilisé
+          le premium. Pas besoin de te justifier.
         </p>
       </Fragment>
 
@@ -336,11 +337,11 @@ const FICHE = {
         Commence par une série, tu verras où tu en es.
       </p>
       <p>
-        <a class="btn btn--accent" href={TARIFS_TARGET}>Commencer l’essai gratuit</a>
+        <a class="btn btn--accent" href={TARIFS_TARGET}>Passer au premium</a>
       </p>
       <p class="final__note">
-        <span class="num">{nombre(mensuel.prix)}</span> € par mois après l’essai ·
-        sans engagement
+        <span class="num">{nombre(mensuel.prix)}</span> € par mois · sans engagement ·
+        remboursé sous <span class="num">{RETRACTATION_JOURS}</span> jours si tu changes d’avis
       </p>
     </div>
   </section>
