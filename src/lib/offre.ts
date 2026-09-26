@@ -18,7 +18,7 @@ export type PlanId = 'monthly' | 'quarterly';
 export interface Formule {
   id: PlanId;
   nom: string;
-  /** Montant TTC facturé à chaque échéance, en euros. */
+  /** Montant facturé à chaque échéance, en euros. Voir MENTION_TVA. */
   prix: number;
   /** Nombre de mois couverts par une échéance. */
   mois: number;
@@ -45,6 +45,22 @@ export const FORMULES: Formule[] = [
     avantage: 'Le temps d’une vraie préparation',
   },
 ];
+
+/**
+ * Régime de TVA de l'éditeur, TopPercentile SAS : FRANCHISE EN BASE
+ * (art. 293 B du CGI), confirmé le 26/09/2026. Aucune TVA n'est facturée : le
+ * prix affiché est le prix payé, et toute facture doit porter cette mention.
+ *
+ * Ne JAMAIS écrire « TTC » ni « TVA comprise » ailleurs : ce serait faux, et un
+ * prix affiché inexact est un défaut de conformité (art. L112-1 C. conso).
+ *
+ * Le jour où la société dépasse le seuil de la franchise, TROIS choses changent
+ * ensemble : cette ligne (« TTC, TVA à 20 % comprise »), un enregistrement FR
+ * dans Stripe Tax + `automatic_tax` sur la Checkout Session, et le pied de
+ * facture posé sur les clients Stripe par `create-checkout-session`. Prix
+ * inchangés (tax_behavior: inclusive) : la TVA sera prise sur la marge.
+ */
+export const MENTION_TVA = 'TVA non applicable, art. 293 B du CGI';
 
 /** Durée de l'essai, en jours. Voir la note sur la rétractation ci-dessous. */
 export const ESSAI_JOURS = 14;

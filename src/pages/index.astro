@@ -14,7 +14,7 @@ import Base from '../layouts/Base.astro';
 import Phone from '../components/Phone.astro';
 import Faq from '../components/Faq.astro';
 import { TARIFS_TARGET, CONTACT_EMAIL } from '../lib/nav';
-import { FORMULES, ESSAI_JOURS, nombre, parMois } from '../lib/offre';
+import { FORMULES, ESSAI_JOURS, MENTION_TVA, nombre, parMois } from '../lib/offre';
 
 /* Les six sous-épreuves, dans l'ordre du Parcours de l'app
    (~/memora_tage_mage/src/data/structure.ts). Le lieu est le titre, la
@@ -256,7 +256,7 @@ const FICHE = {
                   soit <span class="num">{nombre(parMois(f))}</span> € par mois
                 </p>
               )}
-              <p class="formule__tva">TTC, TVA comprise</p>
+              <p class="formule__tva">{MENTION_TVA}</p>
             </li>
           ))
         }
